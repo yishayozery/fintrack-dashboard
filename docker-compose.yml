@@ -1,0 +1,61 @@
+version: "3.9"
+
+services:
+
+  # ── PostgreSQL database ───────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER:     ${DB_USER:-fintrack}
+      POSTGRES_PASSWORD: ${DB_PASS:-fintrack123}
+      POSTGRES_DB:       ${DB_NAME:-fintrack}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-fintrack}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ── FastAPI backend ───────────────────────────────────────
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL:    postgresql://${DB_USER:-fintrack}:${DB_PASS:-fintrack123}@db:5432/${DB_NAME:-fintrack}
+      SECRET_KEY:      ${SECRET_KEY:-CHANGE_THIS_IN_PRODUCTION}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:8080}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app     # live-reload in dev
+      - uploads:/app/uploads
+
+  # ── Nginx (serves frontend + proxies API) ────────────────
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "80:80"
+      - "443:443"         # HTTPS (after adding SSL cert)
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - certbot_www:/var/www/certbot:ro
+      - certbot_conf:/etc/letsencrypt:ro
+
+volumes:
+  postgres_data:
+  uploads:
+  certbot_www:
+  certbot_conf:
