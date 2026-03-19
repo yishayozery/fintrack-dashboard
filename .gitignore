@@ -1,0 +1,6 @@
+# לא להעלות לגיטהאב
+.DS_Store
+Thumbs.db
+*.env
+node_modules/
+.claude/
