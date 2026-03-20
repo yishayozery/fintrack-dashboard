@@ -23,54 +23,603 @@
       <div style="background:#0f172a;border-radius:12px;padding:20px;margin-bottom:20px;border:1px solid #334155;">
         <p style="color:#94a3b8;font-size:13px;margin:0 0 12px;">הזן את הקוד שקיבלת במייל:</p>
         <input id="verifyCodeInput" type="text" maxlength="6" placeholder="000000"
-          style="width:160px;text-align:center;font-size:2em;letter-spacing:12px;border:2px solid #3b82f6;border-radius:10px;padding:12px;background:#1e293b;color:white;"/>
+          style="width:160px;text-align:center;font-size:2em;letter-spacing:12px;border:2px solid #3b82f6;border-radius:10px;padding:12px;background:#1e293b;color:white;font-weight:700;"
+          oninput="checkVerifyCode()" />
+        <p style="color:#f59e0b;font-size:12px;margin:10px 0 0;">לצורך הדגמה: הזן 123456</p>
       </div>
-      <p style="color:#94a3b8;font-size:12px;">A 6-digit code has been sent to your email. Please enter it here.</p>
-      <button id="verifyButton" class="btn-action" style="width:200px;padding:12px 18px;font-size:14px;cursor:pointer;margin-top:12px;">Verify</button>
+      <button onclick="skipVerifyForNow()" style="background:none;border:none;color:#64748b;font-size:13px;cursor:pointer;text-decoration:underline;">דלג — אאמת מאוחר יותר</button>
     </div>
-  
-   5-- Registration Form -->
-    <div class="auth-card" style="display:none;">
-      <h1 class="auth-title">פיאשננסבזל</h1>
-      <div class="aauth-section">
-        <label style="display:block;margin-bottom:6px;color:#94a3b8;">נד סורב ייזובלת</label>
-        <input type="text" id="register_name_input" spellcheck="false" placeholder="Name" style="width:100%;padding:18px 12px;margin-bottom:12px;border:1px solid #334155;border-radius:30px;background:rgba(255,255,255,0.1);color:#fff;font-size:14px;box-sizing:border-box;" />
-      </div>
-      <div class="aauth-section">
-        <label style="display:block;margin-bottom:6px;color:#94a3b8;">缩域间</label>
-        <input type="email" id="register_email_input" placeholder="Email" spellcheck="false" style="width:100%;padding:18px 12px;margin-bottom:12px;border:1px solid #334155;border-radius:30px;background:rgba(255,255,255,0.1);color:#fff;font-size:14px;box-sizing:border-box;" />
-        </div>
-        <div class="aauth-section">
-          <label style="display:block;margin-bottom:6px;color:#94a3b8;">栐在冰次</label>
-          <input type="password" id="register_password_input" placeholder="栐在冰次" style="width:100%;padding:18px 12px;margin-bottom:12px;border:1px solid #334155;border-radius:30px;background:rgba(255,255,255,0.1);color:#fff;font-size:14px;box-sizing:border-box;" />
-        </div>
-        <div class="aauth-section">
-          <label style="display:block;margin-bottom:6px;color:#94a3b8;">砐圩憐歡</label>
-          <input type="password" id="register_password_confirm_input" placeholder="渧在憐歡" style="width:100%;padding:18px 12px;margin-bottom:12px;border:1px solid #334155;border-radius:30px;background:rgba(255,255,255,0.1);color:#fff;font-size:14px;box-sizing:border-box;" />
-        </div>
-      </div>
-      <button id="register_button" class="btn-action" style="width:100%;padding:12px 18px;font-size:14px;cursor:pointer;margin-top:24px;">Join Now</button>
+  </div>
+
+  <div class="auth-card">
+    <div class="auth-logo">💰</div>
+    <h2 class="auth-title">דשבורד פיננסי חכם</h2>
+    <p class="auth-subtitle">נהל את הכספים שלך בצורה חכמה ובטוחה</p>
+
+    <!-- Google -->
+    <button class="auth-social-btn auth-google-btn" onclick="authWithGoogle()">
+      <svg width="20" height="20" viewBox="0 0 48 48">
+        <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.7 2.3 30.2 0 24 0 14.7 0 6.8 5.4 3 13.3l7.8 6C12.6 13.3 17.9 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17z"/>
+        <path fill="#FBBC05" d="M10.8 28.7A14.6 14.6 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.8-6A24 24 0 0 0 0 24c0 3.9.9 7.5 2.5 10.7l8.3-6z"/>
+        <path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.5l-7.5-5.8c-2 1.4-4.6 2.2-7.7 2.2-6.1 0-11.3-4-13.1-9.5l-8.3 6C6.8 42.6 14.7 48 24 48z"/>
+      </svg>
+      כניסה עם Google
+    </button>
+
+    <!-- Facebook -->
+    <button class="auth-social-btn auth-facebook-btn" onclick="authWithFacebook()">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="white">
+        <path d="M24 12.07C24 5.41 18.63 0 12 0S0 5.41 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.04V9.41c0-3.02 1.8-4.7 4.54-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.95.93-1.95 1.88v2.27h3.32l-.53 3.5h-2.79V24C19.61 23.1 24 18.1 24 12.07z"/>
+      </svg>
+      כניסה עם Facebook
+    </button>
+
+    <div class="auth-divider">או</div>
+
+    <!-- Email/password form - all fields visible upfront -->
+    <input id="authNameInput" class="auth-input" type="text" placeholder="שם מלא *" autocomplete="name" />
+    <input id="authEmailInput" class="auth-input" type="email" placeholder="כתובת מייל *" autocomplete="email" />
+    <div style="position:relative;">
+      <input id="authPassInput" class="auth-input" type="password" placeholder="סיסמה * (לפחות 8 תווים)"
+        autocomplete="new-password" oninput="updatePasswordStrength()" style="padding-left:45px;" />
+      <button onclick="togglePassVisibility()" type="button"
+        style="position:absolute;left:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#94a3b8;cursor:pointer;font-size:16px;padding:0;" id="passToggleBtn">👁</button>
     </div>
-  
-  
-   5-- Login Form -->
-    <div class="auth-card">
-      <h1 class="auth-title">用户</h1>
-      <div class="aauth-section">
-        <label style="display:block;margin-bottom:6px;color:#94a3b8;">砐在冰次</label>
-        <input type="email" id="login_email_input" placeholder="Email" spellcheck="false" style="width:100%;padding:18px 12px;margin-bottom:12px;border:1px solid #334155;border-radius:30px;background:rgba(255,255,255,0.1);color:#fff;font-size:14px;box-sizing:border-box;" />
+    <!-- Password strength meter -->
+    <div id="passStrengthWrap" style="display:none;margin:-8px 0 8px;">
+      <div style="height:4px;background:#1e293b;border-radius:2px;overflow:hidden;margin-bottom:4px;">
+        <div id="passStrengthBar" style="height:100%;width:0%;transition:width .3s,background .3s;border-radius:2px;"></div>
       </div>
-        <div class="aauth-section">
-          <label style="display:block;margin-bottom:6px;color:#94a3b8;">栐在冰次</label>
-          <input type="password" id="login_password_input" placeholder="栐在冰次" style="width:100%;padding:18px 12px;margin-bottom:12px;border:1px solid #334155;border-radius:30px;background:rgba(255,255,255,0.1);color:#fff;font-size:14px;box-sizing:border-box;" />
-        </div>
-      <button id="login_button" class="btn-action" style="width:100%;padding:12px 18px;font-size:14px;cursor:pointer;margin-top:24px;">用户</button>
+      <span id="passStrengthLabel" style="font-size:11px;"></span>
     </div>
-  
-  
-   5-- Dashboard Screen -->
-  
-  
-  
-  
+
+    <!-- Terms: read-only checkbox, only checkable by reading terms -->
+    <div id="authTermsRow" style="display:flex;align-items:center;gap:10px;margin:10px 0;text-align:right;font-size:13px;color:#94a3b8;direction:rtl;background:#0f172a;border-radius:10px;padding:10px 12px;border:1px solid #334155;">
+      <div id="authTermsCheckVisual" style="width:20px;height:20px;border-radius:5px;border:2px solid #475569;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;">
+      </div>
+      <span>
+        יש לקרוא את
+        <button type="button" onclick="openTermsModal()" style="background:none;border:none;color:#3b82f6;cursor:pointer;padding:0;font-size:13px;font-weight:700;text-decoration:underline;">תנאי השימוש</button>
+        לפני ההרשמה
+        <span id="termsReadBadge" style="display:none;color:#22c55e;font-size:11px;margin-right:6px;">✓ נקרא</span>
+      </span>
+    </div>
+
+    <button id="authMainBtn" class="auth-main-btn" onclick="authWithEmail()" disabled
+      style="opacity:0.45;cursor:not-allowed;">
+      הרשמה / כניסה
+    </button>
+    <p class="auth-privacy" style="margin-top:10px;font-size:12px;">
+      <span>🔒</span> המידע שלך מוצפן ומאובטח. לא נחשף לצד שלישי.
+    </p>
+  </div>
+</div>
+<!-- ========== OAUTH SIMULATION OVERLAY ========== -->
+<div id="oauthSimOverlay" style="display:none;">
+  <div class="oauth-sim-card">
+    <div style="font-size:1.8em;margin-bottom:8px;" id="oauthSimIcon">🔐</div>
+    <div class="oauth-sim-title" id="oauthSimTitle">כניסה</div>
+    <div class="oauth-sim-subtitle" id="oauthSimSubtitle">הזן שם ומייל</div>
+    <input type="hidden" id="oauthSimProvider" value="" />
+    <input id="oauthSimName" class="auth-input" type="text" placeholder="שם מלא" style="margin-top:8px;" />
+    <input id="oauthSimEmail" class="auth-input" type="email" placeholder="כתובת מייל (אופציונלי)" />
+    <button class="auth-main-btn" onclick="completeOAuthSim()" style="margin-top:8px;">המשך</button>
+    <button onclick="document.getElementById('oauthSimOverlay').style.display='none'"
+      style="background:none;border:none;color:#94a3b8;cursor:pointer;margin-top:10px;font-size:0.9em;">ביטול</button>
+    <p style="color:#475569;font-size:0.75em;margin-top:14px;line-height:1.5;">
+      בפריסת המוצר יהיה OAuth אמתי עם גוגל / פייסבוק.
+      לעת עתה פרוטוטייפ משתמש בסימולציה מקומית.
+    </p>
+  </div>
+</div>
+
+<!-- ========== FOLDER ONBOARDING STEP ========== -->
+<div id="folderStepOverlay" style="display:none;">
+  <div class="folder-step-card" style="max-width:520px;text-align:right;">
+    <div style="text-align:center;margin-bottom:16px;">
+      <div class="folder-step-icon">📂</div>
+      <h2 class="folder-step-title">הגדרת תיקיית קבצים</h2>
+      <p style="color:#94a3b8;font-size:14px;margin:0;">שלב 3 מתוך 3</p>
+    </div>
+
+    <!-- What files to download -->
+    <div style="background:#0f172a;border-radius:12px;padding:16px;margin-bottom:18px;border:1px solid #334155;">
+      <div style="font-weight:700;color:#e2e8f0;margin-bottom:10px;font-size:14px;">📥 מה להוריד לתיקייה?</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <span style="font-size:18px;flex-shrink:0;">🏦</span>
+          <div>
+            <div style="font-weight:700;color:#93c5fd;font-size:13px;">דפי חשבון בנק</div>
+            <div style="color:#94a3b8;font-size:12px;line-height:1.5;">
+              הורד מאתר הבנק את פירוט התנועות מהתאריך שממנו תרצה שהמערכת תתחיל לנתח.<br>
+              <strong style="color:#fbbf24;">מומלץ: 12 חודשים אחורה לפחות</strong>
+            </div>
+          </div>
+        </div>
+        <div style="height:1px;background:#334155;"></div>
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <span style="font-size:18px;flex-shrink:0;">💳</span>
+          <div>
+            <div style="font-weight:700;color:#93c5fd;font-size:13px;">פירוט כרטיסי אשראי</div>
+            <div style="color:#94a3b8;font-size:12px;line-height:1.5;">
+              הורד פירוט עסקאות לכל כרטיס אשראי המחויב בחשבון (ויזה, מסטרכארד, אמריקן אקספרס).<br>
+              <strong style="color:#f87171;">ללא פירוט הכרטיסים — ניתוח ההוצאות יהיה חלקי בלבד!</strong>
+            </div>
+          </div>
+        </div>
+        <div style="height:1px;background:#334155;"></div>
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <span style="font-size:18px;flex-shrink:0;">📄</span>
+          <div>
+            <div style="font-weight:700;color:#93c5fd;font-size:13px;">קבצים נוספים (אופציונלי)</div>
+            <div style="color:#94a3b8;font-size:12px;">תלושי משכורת, דפי משכנתא, דוחות פנסיה</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="folderCurrentPath" style="display:none;" class="folder-path-badge"></div>
+
+    <button class="auth-main-btn" onclick="triggerFolderPick()"
+      style="background:#059669;margin-bottom:10px;width:100%;">📁 בחר תיקייה</button>
+    <button onclick="skipFolderStep()"
+      style="background:none;border:none;color:#64748b;cursor:pointer;font-size:0.9em;text-decoration:underline;width:100%;padding:4px;">
+      דלג — אגדיר מאוחר יותר
+    </button>
+    <p style="color:#475569;font-size:0.75em;margin-top:12px;text-align:center;line-height:1.5;">
+      ניתן לשנות את התיקייה בכל עת דרך הגדרות
+    </p>
+  </div>
+</div>
+
+
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <h1>📊 דשבורד פיננסי <span id="headerUserName" style="color:#93c5fd;font-weight:900;"></span></h1>
+    <p>מעקב הכנסות והוצאות חודשי · ינואר – מרץ 2026 · 9 כרטיסי אשראי · 2 חשבונות בנק</p>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div class="header-badge">עודכן: מרץ 2026</div>
+    <button onclick="openProfileModal()" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:6px 14px;font-size:13px;font-weight:700;cursor:pointer;">✏️ ערוך פרופיל</button>
+  </div>
+</div>
+
+<!-- USER INFO BAR -->
+<div id="userInfoBar" style="background:#1e293b;padding:7px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;border-bottom:2px solid #334155;">
+  <div style="display:flex;align-items:center;gap:7px;color:#e2e8f0;font-size:13px;font-weight:700;">
+    <span>👤</span><span id="uib-name-text" style="color:#f87171;">לא הוגדר משתמש</span>
+  </div>
+  <div style="width:1px;height:16px;background:#334155;"></div>
+  <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#94a3b8;">
+    <span>📂</span>
+    <span id="uib-folder-text" style="color:#f87171;">תיקייה לא הוגדרה</span>
+    <button onclick="switchTab('management');setTimeout(()=>document.getElementById('settings-folder-path')?.focus(),200)" style="background:#334155;color:#93c5fd;border:none;border-radius:5px;padding:2px 8px;font-size:11px;cursor:pointer;">הגדר</button>
+  </div>
+  <div style="margin-right:auto;display:flex;gap:8px;align-items:center;">
+    <button id="resetProfileBtn" onclick="resetProfileStep()" style="background:transparent;color:#f87171;border:1px solid #f87171;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;font-weight:600;">🔄 איפוס פרופיל</button>
+  </div>
+</div>
+
+<!-- income panel + savings bar removed -->
+
+<div class="container">
+
+<!-- ALERT BANNER (needs review) -->
+<div class="alert-banner" id="alertBanner" style="display:none;">
+  <div class="ab-icon">⚠️</div>
+  <div>
+    <strong>נדרשת בדיקה:</strong>
+    <span id="alertCount" class="alert-count">0</span>
+    פריטים זוהו כחריגים — קפיצות מחיר, חיובים לא ברורים וחיובים חדשים
+  </div>
+  <button class="btn btn-primary" onclick="switchTab('disputes')" style="margin-right:auto;">🔍 עבור לבדיקה</button>
+</div>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <label>🗓 חודש:</label>
+  <select id="filterMonth" onchange="applyFilters()">
+    <option value="all">כל החודשים</option>
+    <option value="ינואר 2026">ינואר 2026</option>
+    <option value="פברואר 2026">פברואר 2026</option>
+    <option value="מרץ 2026">מרץ 2026</option>
+  </select>
+  <label>💳 מקור:</label>
+  <select id="filterCard" onchange="applyFilters()">
+    <option value="all">כל המקורות</option>
+    <optgroup label="── כרטיסי ישי ──">
+    <option value="*0328">דיסקונט *0328</option>
+    <option value="*2621">דיסקונט *2621</option>
+    <option value="*7959">מסטרקארד *7959</option>
+    </optgroup>
+    <optgroup label="── כרטיסי שלומית ──">
+    <option value="*2039">מסטרקארד קורפוריט *2039</option>
+    <option value="*5232">מסטרקארד גולד *5232</option>
+    <option value="*9781">לאומי ביזנס *9781</option>
+    </optgroup>
+    <optgroup label="── בנקים ──">
+    <option value="בנק פיבי">בנק הבינלאומי פיבי</option>
+    <option value="בנק לאומי">בנק לאומי</option>
+    </optgroup>
+  </select>
+  <label>🔍 הצג:</label>
+  <select id="filterType" onchange="applyFilters()">
+    <option value="regular">הוצאות שוטפות</option>
+    <option value="assets">נכסים / השקעות</option>
+    <option value="all">הכל (כולל פנימי)</option>
+  </select>
+  <label>🏷 קטגוריה:</label>
+  <select id="filterCat" onchange="applyFilters()">
+    <option value="all">כל הקטגוריות</option>
+  </select>
+  <label>⚡ סוג:</label>
+  <select id="filterChargeType" onchange="applyFilters()">
+    <option value="all">כל הסוגים</option>
+    <option value="קבוע">🔄 קבוע</option>
+    <option value="חד פעמי">⚡ חד פעמי</option>
+    <option value="משתנה">📊 משתנה</option>
+  </select>
+  <label>🗂️ פרוייקט:</label>
+  <select id="filterProject" onchange="applyFilters()">
+    <option value="all">כל הפרוייקטים</option>
+    <option value="assigned">עם שיוך בלבד</option>
+    <option value="unassigned">ללא שיוך</option>
+  </select>
+  <button class="btn btn-primary" onclick="resetFilters()">🔄 איפוס פילטרים</button>
+  <button class="btn" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;font-size:12px;" onclick="confirmSystemReset()">🗑️ איפוס מערכת</button>
+  <button class="btn-export" onclick="exportCSV()">📥 ייצוא CSV</button>
+  <button class="btn-export" onclick="exportJSON()" style="margin-right:4px;">📋 ייצוא JSON</button>
+</div>
+
+<!-- TABS -->
+<div class="tabs-wrap">
+  <div class="tabs-grouped">
+    <div class="tab-group">
+      <div class="tab-group-label">📊 נתונים</div>
+      <div class="tab-group-row">
+        <div class="tab" onclick="switchTab('statement')">📄 דף חשבון</div>
+        <div class="tab active" onclick="switchTab('transactions')">📋 עסקאות</div>
+        <div class="tab" onclick="switchTab('insurance')">🛡️ ביטוח <span class="tab-badge" id="insuranceBadge" style="display:none;background:#f59e0b;">!</span></div>
+        <div class="tab" onclick="switchTab('management')">🗂️ ניהול</div>
+        <div class="tab" id="disputeTab" onclick="switchTab('disputes')">⚠️ חריגים <span class="tab-badge" id="disputeBadge" style="display:none;background:#ef4444;">0</span></div>
+      </div>
+    </div>
+    <div class="tab-group-divider"></div>
+    <div class="tab-group">
+      <div class="tab-group-label">💡 תובנות</div>
+      <div class="tab-group-row">
+        <div class="tab active" onclick="switchTab('overview')">🏠 סקירה</div>
+        <div class="tab" onclick="switchTab('savings')">💰 מאזן</div>
+        <div class="tab" onclick="switchTab('categories')">🏷 קטגוריות</div>
+        <div class="tab" onclick="switchTab('merchants')">🏪 בתי עסק</div>
+        <div class="tab" onclick="switchTab('recommendations')">💡 המלצות</div>
+        <div class="tab" onclick="switchTab('insurance')">🛡️ ביטוח <span class="tab-badge" id="insuranceBadge" style="display:none;background:#f59e0b;">!</span></div>
+        <div class="tab" onclick="switchTab('mortgage')">🏠 משכנתא</div>
+        <div class="tab" onclick="switchTab('investments')">📈 השקעות</div>
+      </div>
+    </div>
+    <div class="tab-group-divider"></div>
+    <div class="tab-group">
+      <div class="tab-group-label">🗂️ ניהול</div>
+      <div class="tab-group-row">
+        <div class="tab" onclick="switchTab('management')">🗂️ ניהול</div>
+        <div class="tab" onclick="openProfileModal()" id="profileTab">👤 פרופיל</div>
+      </div>
+    </div>
+  </div>
+
+
+<!-- ══ WORKFLOW PROGRESS BAR ══ -->
+<div id="wfBar" class="wf-bar"></div>
+<div id="wfHint" class="wf-hint" style="display:none;">
+  <span id="wfHintIcon">💡</span>
+  <span id="wfHintText"></span>
+  <button class="wf-hint-close" onclick="_wfDismissHint()" title="סגור">✕</button>
+</div>
+
+  <!-- ══════════ OVERVIEW ══════════ -->
+  <div id="tab-overview" class="tab-content">
+    <div id="benchmarkAlertsPanel"></div>
+    <div class="kpi-grid" id="kpiGrid"></div>
+    <div class="grid-2">
+      <div class="card">
+        <h3>📅 הוצאות לפי חודש</h3>
+        <div class="chart-wrap"><canvas id="monthChart"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>💳 פיזור לפי כרטיס</h3>
+        <div class="chart-wrap"><canvas id="cardChart"></canvas></div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <h3>🥧 פיזור קטגוריות</h3>
+        <div class="chart-wrap"><canvas id="catPieChart"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>📊 השוואה חודשית</h3>
+        <div id="monthCatCompare"></div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:18px;">
+      <div class="card">
+        <h3>⚡ פיזור לפי סוג חיוב</h3>
+        <div id="chargeTypeBreakdown" style="padding-top:6px;"></div>
+      </div>
+      <div class="card">
+        <h3>📊 חיובים קבועים לפי חודש</h3>
+        <div class="chart-wrap"><canvas id="fixedVarChart"></canvas></div>
+      </div>
+    </div>
+    <!-- Fees Summary Panel -->
+    <div id="feesSummaryPanel"></div>
+  </div>
+
+  <!-- ══════════ SAVINGS ══════════ -->
+  <div id="tab-savings" class="tab-content">
+    <div id="cashFlowCalendar" style="margin-bottom:14px;"></div>
+    <div id="statementBalancesWidget" style="margin-bottom:14px;"></div>
+    <div id="savingsContent"></div>
+  </div>
+
+  <!-- ══════════ CATEGORIES ══════════ -->
+  <div id="tab-categories" class="tab-content">
+    <!-- TRENDS TABLE -->
+    <div class="card" style="margin-bottom:18px;">
+      <h3>📈 מגמות הוצאה לפי קטגוריה וחודש</h3>
+      <div class="scroll-x">
+        <table class="trend-tbl" id="trendTable"></table>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <h3>📊 הוצאות לפי קטגוריה</h3>
+        <div class="chart-wrap-lg"><canvas id="catBarChart"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>📋 פירוט קטגוריות</h3>
+        <div class="cat-list" id="catList"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>📅 הוצאה לפי קטגוריה וחודש</h3>
+      <div class="chart-wrap-lg"><canvas id="catMonthBarChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ══════════ MERCHANTS ══════════ -->
+  <div id="tab-merchants" class="tab-content">
+    <div class="grid-2">
+      <div class="card">
+        <h3>🏆 Top 10 — לפי סכום</h3>
+        <div class="chart-wrap-lg"><canvas id="topMerchChart"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>🔁 רכישות חוזרות</h3>
+        <div class="scroll-x"><table class="tbl" id="recurTable"></table></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>📋 כל בתי העסק</h3>
+      <div class="search-row">
+        <input type="text" id="merchantSearch" placeholder="🔍 חיפוש..." oninput="renderMerchantTable()">
+      </div>
+      <div class="scroll-x"><table class="tbl" id="merchantTable"></table></div>
+    </div>
+  </div>
+
+  <!-- ══════════ TRANSACTIONS ══════════ -->
+  <div id="tab-transactions" class="tab-content">
+  <div id="undetailed-cc-banner" style="display:none;background:#fff7ed;border:1.5px solid #fcd34d;border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:13px;">
+    <div style="display:flex;align-items:flex-start;gap:10px;">
+      <span style="font-size:20px;flex-shrink:0;">📂</span>
+      <div>
+        <div style="font-weight:700;margin-bottom:4px;">יש כרטיסי אשראי ללא פירוט עסקאות</div>
+        <div id="undetailed-cc-list" style="color:#92400e;"></div>
+        <div style="margin-top:8px;">
+          <button onclick="switchTab('disputes')" style="background:#f59e0b;color:white;border:none;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;">⚠️ עבור לטיפול בחריגים</button>
+        </div>
+      </div>
+    </div>
+  </div>
+    <div class="card">
+      <!-- Data summary bar -->
+      <div id="txSummaryBar" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;padding:12px 14px;background:linear-gradient(135deg,#0f172a,#1e293b);border-radius:12px;border:1px solid #334155;align-items:center;">
+        <div style="flex:1;min-width:140px;">
+          <div style="font-size:11px;color:#64748b;margin-bottom:2px;">סה"כ הוצאות מסוננות</div>
+          <div id="txSumTotal" style="font-size:1.3em;font-weight:800;color:#f87171;">—</div>
+        </div>
+        <div style="width:1px;background:#334155;align-self:stretch;"></div>
+        <div style="flex:1;min-width:100px;">
+          <div style="font-size:11px;color:#64748b;margin-bottom:2px;">מספר עסקאות</div>
+          <div id="txSumCount" style="font-size:1.1em;font-weight:700;color:#e2e8f0;">—</div>
+        </div>
+        <div style="width:1px;background:#334155;align-self:stretch;"></div>
+        <div style="flex:1;min-width:120px;">
+          <div style="font-size:11px;color:#64748b;margin-bottom:2px;">ממוצע לעסקה</div>
+          <div id="txSumAvg" style="font-size:1.1em;font-weight:700;color:#e2e8f0;">—</div>
+        </div>
+        <div style="width:1px;background:#334155;align-self:stretch;"></div>
+        <div style="flex:1;min-width:130px;">
+          <div style="font-size:11px;color:#64748b;margin-bottom:2px;">טווח תאריכים</div>
+          <div id="txSumRange" style="font-size:12px;font-weight:600;color:#93c5fd;">—</div>
+        </div>
+      </div>
+      <h3 style="margin-top:0;">📋 פירוט עסקאות <span id="txCount" style="font-size:12px;color:var(--gray-500);font-weight:400;"></span></h3>
+      <div class="search-row" style="flex-wrap:wrap;gap:8px;">
+        <input type="text" id="txSearch" placeholder="🔍 חיפוש שם עסק, קטגוריה..." oninput="txPage=1;renderTxTable()" style="flex:1;min-width:180px;">
+        <select id="txApprovalFilter" onchange="_txApprovalFilter=this.value;txPage=1;renderTxTable()" title="סינון לפי סטטוס אישור" style="border:1px solid #d1d5db;border-radius:8px;padding:6px 10px;font-size:13px;cursor:pointer;">
+          <option value="all">כל הסטטוסים</option>
+          <option value="pending">⏳ ממתין לאישור</option>
+          <option value="approved">✓ מאושר</option>
+        </select>
+        <select id="txSortField" onchange="renderTxTable()">
+          <option value="date">מיון: תאריך</option>
+          <option value="amount">מיון: סכום</option>
+          <option value="name">מיון: שם עסק</option>
+        </select>
+        <select id="txSortDir" onchange="renderTxTable()">
+          <option value="desc">יורד</option>
+          <option value="asc">עולה</option>
+        </select>
+        <button id="warnFilterBtn" onclick="toggleWarnFilter()"
+          style="background:#fff7ed;color:#92400e;border:1px solid #fcd34d;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;"
+          title="הצג עסקאות חריגות בלבד">⚠️ חריגות <span id="warnCount" style="background:#f59e0b;color:#fff;border-radius:8px;padding:1px 6px;font-size:11px;margin-right:4px;">0</span></button>
+      </div>
+      <!-- Bulk action bar — visible when rows are selected -->
+      <div id="txBulkBar" style="display:none;align-items:center;gap:10px;padding:8px 12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;margin-top:8px;flex-wrap:wrap;">
+        <span id="txBulkCount" style="font-size:13px;font-weight:700;color:#1e40af;">0 עסקאות נבחרו</span>
+        <button onclick="bulkApprove()" style="background:#10b981;color:white;border:none;border-radius:7px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;">✓ אשר נבחרים</button>
+        <button onclick="bulkUnapprove()" style="background:#6b7280;color:white;border:none;border-radius:7px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;">↩ בטל אישור</button>
+        <button onclick="bulkEscalate()" style="background:#f59e0b;color:white;border:none;border-radius:7px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;">⚠️ שלח לחריגים</button>
+        <button onclick="clearTxSelection()" style="background:white;color:#6b7280;border:1px solid #d1d5db;border-radius:7px;padding:6px 12px;font-size:12px;cursor:pointer;">✕ ביטול בחירה</button>
+      </div>
+      <div class="scroll-x"><table class="tbl" id="txTable"></table></div>
+      <div class="pagination" id="txPagination"></div>
+    </div>
+  </div>
+
+
+
+  <!-- ══════════ DISPUTES ══════════ -->
+  <div id="tab-insurance" class="tab-content">
+    <div id="insuranceContent"></div>
+  </div>
+  <div id="tab-statement" class="tab-content">
+    <div id="statementContent"></div>
+  </div>
+  <div id="tab-mortgage" class="tab-content"><div id="mortgageContent"></div></div>
+  <div id="tab-investments" class="tab-content"><div id="investmentsContent"></div></div>
+
+  <div id="tab-management" class="tab-content">
+    <div id="managementContent"></div>
+
+  <!-- ADVISOR SECTION -->
+  <div id="advisorSection" style="margin-top:20px;">
+    <!-- rendered by renderAdvisorSection() -->
+  </div>
+  </div>
+  <div id="tab-disputes" class="tab-content">
+    <div id="disputeContent"></div>
+  </div>
+
+  <!-- ══════════ RECOMMENDATIONS ══════════ -->
+  <div id="tab-recommendations" class="tab-content">
+    <div class="card" style="margin-bottom:18px;">
+      <h3>💡 המלצות פיננסיות אישיות</h3>
+      <div class="rec-grid" id="recGrid"></div>
+    </div>
+    <div class="card">
+      <h3>🎯 תובנות ופעולות מומלצות</h3>
+      <div id="insightsList"></div>
+    </div>
+  </div>
+
+</div><!-- /tabs-wrap -->
+</div><!-- /container -->
+
+
+
+<!-- BULK EDIT TOAST -->
+<div id="bulkToast" class="bulk-toast hidden">
+  <div id="bulkToastMsg" style="flex:1;"></div>
+  <button class="btn-bulk-yes" id="bulkYesBtn" onclick="confirmBulkEdit()">✅ עדכן הכל</button>
+  <button class="btn-bulk-no" onclick="dismissBulkToast()">✖ לא</button>
+</div>
+
+<!-- ══ DRILL-DOWN MODAL ══ -->
+<div id="drillDownModal" class="modal-overlay hidden" onclick="if(event.target===this)closeDrillDown()">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="ddTitle">פירוט</div>
+      <button class="modal-close" onclick="closeDrillDown()">✕</button>
+    </div>
+    <div class="modal-body" id="ddBody"></div>
+    <div class="modal-footer">
+      <span id="ddSummary"></span>
+      <button class="btn btn-gray" onclick="closeDrillDown()">סגור</button>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  מקורות: דיסקונט *0328, *2621 | מסטרקארד *7959 | קורפוריט *2039 | גולד *5232 | לאומי ביזנס *9781 | בנק לאומי 895-04876353 | בנק פיבי · ינואר–מרץ 2026<br>
+  הנתונים לצרכי מעקב אישי בלבד
+</div>
+
+
+
+
+<!-- PROFILE MODAL -->
+<div id="profileModal" class="modal-overlay hidden" onclick="if(event.target===this)closeProfileModal()">
+  <div class="modal-panel" style="max-width:640px;width:96%;border-radius:16px;overflow:hidden;direction:rtl;max-height:92vh;display:flex;flex-direction:column;">
+    <div class="modal-header" style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:linear-gradient(135deg,#1a56db,#3b82f6);color:white;">
+      <div style="font-size:20px;font-weight:900;" id="profileModalTitle">👤 פרופיל אישי</div>
+      <button onclick="closeProfileModal()" style="background:rgba(255,255,255,0.2);color:white;border:none;border-radius:8px;padding:6px 12px;font-size:18px;cursor:pointer;line-height:1;">✕</button>
+    </div>
+    <div class="modal-body" style="padding:20px;overflow-y:auto;flex:1;" id="profileModalBody"></div>
+    <div style="padding:14px 20px;background:#f8fafc;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-start;gap:10px;">
+      <button id="profileSaveBtn" onclick="saveProfile()" style="background:#1a56db;color:white;border:none;border-radius:8px;padding:10px 24px;font-size:15px;font-weight:700;cursor:pointer;">💾 שמור פרופיל</button>
+      <button onclick="closeProfileModal()" style="background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;border-radius:8px;padding:10px 16px;font-size:14px;cursor:pointer;">ביטול</button>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- ========== TERMS OF SERVICE MODAL ========== -->
+<div id="termsModal" style="display:none;position:fixed;inset:0;z-index:20000;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;direction:rtl;">
+  <div style="background:#1e293b;border-radius:16px;width:min(680px,95vw);max-height:85vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 25px 60px rgba(0,0,0,0.6);">
+    <div style="padding:20px 24px;border-bottom:1px solid #334155;display:flex;justify-content:space-between;align-items:center;">
+      <h3 style="color:#f1f5f9;margin:0;font-size:1.15em;">📜 תנאי שימוש</h3>
+      <button onclick="closeTermsModal()" style="background:none;border:none;color:#94a3b8;font-size:20px;cursor:pointer;line-height:1;">✕</button>
+    </div>
+    <div id="termsScrollBox" onscroll="checkTermsScroll()" style="flex:1;overflow-y:auto;padding:24px;color:#cbd5e1;font-size:14px;line-height:1.7;direction:rtl;max-height:50vh;">
+      <div id="termsContent"></div>
+    </div>
+    <div style="padding:16px 24px;border-top:1px solid #334155;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+      <span id="termsScrollHint" style="color:#f59e0b;font-size:13px;">&#11015; גלול עד לסוף התנאים לאישור</span>
+      <button id="termsAcceptBtn" onclick="acceptTermsAndClose()" disabled
+        style="background:#3b82f6;color:white;border:none;border-radius:10px;padding:10px 28px;font-size:14px;font-weight:700;cursor:not-allowed;opacity:0.45;white-space:nowrap;">
+        קראתי ומסכים/ה
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== ONBOARDING PROFILE STEP ========== -->
+<div id="onboardingProfileOverlay" style="display:none;position:fixed;inset:0;z-index:15000;background:rgba(0,0,0,0.8);align-items:center;justify-content:center;direction:rtl;">
+  <div style="background:#1e293b;border-radius:16px;width:min(480px,95vw);padding:36px 32px;box-shadow:0 25px 60px rgba(0,0,0,0.6);text-align:center;">
+    <div style="font-size:2.8em;margin-bottom:10px;">👤</div>
+    <h2 style="color:#f1f5f9;margin:0 0 8px;font-size:1.4em;">כמעט סיימת!</h2>
+    <p style="color:#94a3b8;margin:0 0 24px;font-size:14px;line-height:1.6;">
+      הפרופיל האישי עוזר למערכת לבצע אופטימיזציה של ההמלצות עבורך.<br>
+      <strong style="color:#60a5fa;">ניתן להשלים גם מאוחר יותר.</strong>
+    </p>
+    <div style="display:flex;justify-content:center;gap:8px;margin-bottom:28px;">
+      <div style="width:36px;height:6px;border-radius:3px;background:#22c55e;"></div>
+      <div style="width:36px;height:6px;border-radius:3px;background:#3b82f6;"></div>
+      <div style="width:36px;height:6px;border-radius:3px;background:#334155;"></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button onclick="goToProfileFromOnboarding()"
+        style="background:linear-gradient(135deg,#3b82f6,#2563eb);color:white;border:none;border-radius:12px;padding:14px 20px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;">
+        <span>✏️</span> מלא את הפרופיל עכשיו
+      </button>
+      <button onclick="skipOnboardingProfile()"
+        style="background:transparent;color:#93c5fd;border:1px solid #3b82f6;border-radius:12px;padding:12px 20px;font-size:14px;cursor:pointer;">
+        דלג — אמלא מאוחר יותר
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+<script src="auth.js"></script>
 </body>
+</html>
