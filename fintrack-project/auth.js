@@ -13,6 +13,9 @@
       if(!userProfile.name) { userProfile.name = saved.name; }
       if(!userProfile.email && saved.email) { userProfile.email = saved.email; }
       updateHeaderUser();
+      // Show main app
+      var ma = document.getElementById('mainApp');
+      if(ma) ma.style.display = 'block';
       // Check folder
       if(!(_appSettings && _appSettings.folderPath)){
         setTimeout(showFolderStepIfNeeded, 700);
@@ -41,7 +44,7 @@
     var em = document.getElementById('oauthSimEmail');
     if(ic) ic.textContent = icon;
     if(ti) ti.textContent = '\u05db\u05e0\u05d9\u05e1\u05d4 \u05e2\u05dd ' + provider;
-    if(su) su.textContent = '\u05d1\u05d2\u05e8\u05e1\u05ea \u05d4\u05deו\u05e6\u05e8 \u05d9\u05e4\u05ea\u05d7 \u05d7\u05dsו\u05df ' + provider + ' \u05d0\u05de\u05d9\u05eaי';
+    if(su) su.textContent = '\u05d1\u05d2\u05e8\u05e1\u05ea \u05d4\u05deו\u05e6\u05e8 \u05d9\u05e4\u05ea\u05d7 \u05d7\u05dcו\u05df ' + provider + ' \u05d0\u05de\u05d9\u05eaי';
     if(pv) pv.value = type;
     if(nm) nm.value = '';
     if(em) em.value = '';
@@ -77,7 +80,7 @@
     }
     if(!name && email){ name = email.split('@')[0]; }
     if(!name){
-      alert('\u05e0\u05d0 \u05d\u05d4\u05d6\u05d9\u05df \u05e9\u05dd');
+      alert('\u05e0\u05d0 \u05dc\u05d4\u05d6\u05d9\u05df \u05e9\u05dd');
       if(nameEl) nameEl.focus();
       return;
     }
@@ -101,6 +104,10 @@
     var scr = document.getElementById('authScreen');
     if(scr) scr.style.display = 'none';
 
+    // Show main app
+    var ma = document.getElementById('mainApp');
+    if(ma) ma.style.display = 'block';
+
     // Check folder
     showOnboardingProfile();
   }
@@ -117,7 +124,7 @@
     if(typeof openSetupWizard === 'function'){
       var ov = document.getElementById('folderStepOverlay');
       if(ov) ov.style.display = 'none';
-       openSetupWizard();
+      openSetupWizard();
     } else if(typeof openSettings === 'function'){
       var ov = document.getElementById('folderStepOverlay');
       if(ov) ov.style.display = 'none';
@@ -635,7 +642,7 @@ function checkCreditCardDetails(){
     if(hasCCPayments && !hasCCDetail){
       banner.style.display = 'block';
       var list = document.getElementById('undetailed-cc-list');
-      if(list) list.innerHTML = '\u05D9\u05E9 \u05EA\u05E9\u05DC\u05D5\u05DE\u05D9 \u05DB\u05E8\u05D8\u05D9\u05E1 \u05D0\u05E9\u05E8\u05D0\u05D9 \u05D1\u05D3\u05E3 \u05D4\u05D7\u05E9\u05D1\u05D5\u05DF — \u05D0\u05E0\u05D0 \u05D4\u05D5\u05E8\u05D3 \u05D0\u05EA \u05E4\u05D9\u05E2\u05D5\u05D8 \u05D4\u05E2\u05E1\u05E7\u05D0\u05D5\u05EA \u05E9\u05DC \u05DB\u05E2\u05D8\u05D9\u05E1\u05D9 \u05D4\u05D0\u05E9\u05E8\u05D0\u05D9 \u05DC\u05EA\u05D9\u05E7\u05D9\u05D9\u05D4.';
+      if(list) list.innerHTML = '\u05D9\u05E9 \u05EA\u05E9\u05DC\u05D5\u05DE\u05D9 \u05DB\u05E8\u05D8\u05D9\u05E1 \u05D0\u05E9\u05E8\u05D0\u05D9 \u05D1\u05D3\u05E3 \u05D4\u04D7\u05E9\u05D1\u05D5\u05DF — \u05D0\u05E0\u05D0 \u05D4\u05D5\u05E8\u05D3 \u05D0\u05EA \u05E4\u05D9\u05E8\u05D5\u05D8 \u05D4\u05E2\u05E1\u05E7\u05D0\u05D5\u05EA \u05E9\u05DC \u05DB\u05E8\u05D8\u05D9\u05E1\u05D9 \u05D4\u05D0\u05E9\u05E8\u05D0\u05D9 \u05DC\u05EA\u05D9\u05E7\u05D9\u05D9\u05D5.';
     }
   }
 }
@@ -697,8 +704,8 @@ function openAddAdvisorModal(){
     +'<h3 style="color:#f1f5f9;margin:0 0 20px;font-size:1.1em;">👔 הוסף יועץ / סוכן</h3>'
     +'<select id="adv-role" style="width:100%;margin-bottom:10px;background:#0f172a;color:#e2e8f0;border:1px solid #334155;border-radius:8px;padding:8px 12px;font-size:14px;">'
     +roles.map(function(r){return'<option value="'+r+'">'+r+'</option>';}).join('')+'</select>'
-    +'<input id="adv-name" placeholder="\u05E9\u05DD \u05DE\u05DC\u05D0" style="width:100%;box-sizing:border-box;background:#0f172a;color:#e2e8f0;border:1px solid #334155;border-radius:8px;padding:9px 12px;font-size:14px;margin-bottom:10px;" />'
-    +'<input id="adv-firm" placeholder="\u05E9\u05DD \u05D7\u05D1\u05E2\u05D4 / \u05DE\u05E9\u05E2\u05D3 (\u05D0\u05D5\u05E4\u05E6\u05D9\u05D5\u05E0\u05DC\u05D9)" style="width:100%;box-sizing:border-box;background:#0f172a;color:#e2e8f0;border:1px solid #334155;border-radius:8px;padding:9px 12px;font-size:14px;margin-bottom:10px;" />'
+    +'<input id="adv-name" placeholder="\u05E9\u05DD \u05DE\u05DC\u05D1" style="width:100%;box-sizing:border-box;background:#0f172a;color:#e2e8f0;border:1px solid #334155;border-radius:8px;padding:9px 12px;font-size:14px;margin-bottom:10px;" />'
+    +'<input id="adv-firm" placeholder="\u05E9\u05DD \u05D7\u05D1\u05E8\u05D4 / \u05DE\u05E9\u05E8\u05D3 (\u05D0\u05D5\u05F4\u05F6\u05D9\u05D5\u05E0\u05DC\u05D9)" style="width:100%;box-sizing:border-box;background:#0f172a;color:#e2e8f0;border:1px solid #334155;border-radius:8px;padding:9px 12px;font-size:14px;margin-bottom:10px;" />'
     +'<input id="adv-phone" placeholder="\u05D8\u05DC\u05E4\u05D5\u05DF" type="tel" style="width:100%;box-sizing:border-box;background:#0f172a;color:#e2e8f0;border:1px solid #334155;border-radius:8px;padding:9px 12px;font-size:14px;margin-bottom:10px;" />'
     +'<input id="adv-email" placeholder="\u05DE\u05D9\u05D9\u05DC" type="email" style="width:100%;box-sizing:border-box;background:#0f172a;color:#e2e8f0;border:1px solid #334155;border-radius:8px;padding:9px 12px;font-size:14px;margin-bottom:16px;" />'
     +'<div style="display:flex;gap:10px;">'
