@@ -1,5 +1,58 @@
 // FinTrack — Auth, Onboarding & Terms
 
+// ══════════════════════════════════════════════════════════
+// GLOBAL NAVBAR LOGIC
+// ══════════════════════════════════════════════════════════
+window._flowState = { registered: false, profileDone: false, profileSkipped: false, filesDone: false, filesSkipped: false };
+
+function navSetStep(stepKey) {
+  // stepKey: 'register' | 'profile' | 'files' | 'dashboard'
+  var ids = { register:'nav-s1', profile:'nav-s2', files:'nav-s3', dashboard:'nav-s4' };
+  var order = ['register','profile','files','dashboard'];
+  var idx = order.indexOf(stepKey);
+  order.forEach(function(k, i){
+    var el = document.getElementById(ids[k]);
+    if(!el) return;
+    el.className = 'nav-step';
+    if(i < idx) el.classList.add('done');
+    else if(i === idx) el.classList.add('active');
+  });
+  // Handle skipped states
+  if(window._flowState.profileSkipped) {
+    var ps = document.getElementById('nav-s2');
+    if(ps && idx > 1) { ps.classList.remove('done'); ps.classList.add('skipped'); }
+  }
+  if(window._flowState.filesSkipped) {
+    var fs = document.getElementById('nav-s3');
+    if(fs && idx > 2) { fs.classList.remove('done'); fs.classList.add('skipped'); }
+  }
+}
+
+function navShowUser(name) {
+  var el = document.getElementById('navUserName');
+  var lb = document.getElementById('navLogoutBtn');
+  if(el) { el.textContent = '👤 ' + name; el.style.display = 'inline'; }
+  if(lb) lb.style.display = 'inline-block';
+}
+
+window.navGoHome = function() {
+  // If not logged in → nothing to do (already on auth)
+  var saved = null;
+  try { saved = JSON.parse(localStorage.getItem('authUser')); } catch(e){}
+  if(!saved) return;
+  // Confirm before logging out
+  if(confirm('לחזור לדף הבית?\nתצטרך להתחבר מחדש.')) {
+    logoutAuth();
+  }
+};
+
+window.reopenFolderStep = function() {
+  var ov = document.getElementById('folderStepOverlay');
+  if(ov) { ov.style.display = 'flex'; window._flowState.filesSkipped = false; }
+  var banner = document.getElementById('schemaBanner');
+  if(banner) banner.style.display = 'none';
+};
+
 
 
 // ===== AUTH SYSTEM =====
@@ -13,22 +66,34 @@
       if(!userProfile.name) { userProfile.name = saved.name; }
       if(!userProfile.email && saved.email) { userProfile.email = saved.email; }
       updateHeaderUser();
-      // Check folder
-      if(!(_appSettings && _appSettings.folderPath)){
+
+      // Update navbar for returning user
+      window._flowState.registered = true;
+      navShowUser(saved.name);
+      var hasFolder = (_appSettings && _appSettings.folderPath);
+      navSetStep(hasFolder ? 'dashboard' : 'files');
+
+      // Show main app
+      var ma = document.getElementById('mainApp');
+      if(ma) ma.style.display = 'block';
+
+      // Check folder — follow schema: show folder step if not configured
+      if(!hasFolder){
         setTimeout(showFolderStepIfNeeded, 700);
       }
     } else {
-      // Show auth screen
+      // Show auth screen — first step in schema
+      navSetStep('register');
       var el = document.getElementById('authScreen');
       if(el) el.style.display = 'flex';
     }
   }
 
   window.authWithGoogle = function(){
-    _showOAuthSim('Google', 'google', '\U0001f171\uFE0F');
+    _showOAuthSim('Google', 'google', '\uD83C\uDD71\uFE0F');
   };
   window.authWithFacebook = function(){
-    _showOAuthSim('Facebook', 'facebook', '\U0001f1eb');
+    _showOAuthSim('Facebook', 'facebook', '\uD83C\uDDEB');
   };
 
   function _showOAuthSim(provider, type, icon){
@@ -98,16 +163,32 @@
 
     updateHeaderUser();
 
+    // Update navbar: registration done, move to profile step
+    window._flowState.registered = true;
+    navShowUser(name);
+    navSetStep('profile');
+
     var scr = document.getElementById('authScreen');
     if(scr) scr.style.display = 'none';
 
-    // Check folder
+    // Show main app
+    var ma = document.getElementById('mainApp');
+    if(ma) ma.style.display = 'block';
+
+    // Check folder / continue flow per schema
     showOnboardingProfile();
   }
 
   // ---- FOLDER STEP ----
   window.showFolderStepIfNeeded = function(){
-    if(_appSettings && _appSettings.folderPath) return; // already set
+    if(_appSettings && _appSettings.folderPath) {
+      // Folder already set — jump to dashboard
+      window._flowState.filesDone = true;
+      navSetStep('dashboard');
+      return;
+    }
+    // Show folder step per schema
+    navSetStep('files');
     var ov = document.getElementById('folderStepOverlay');
     if(ov) ov.style.display = 'flex';
   };
@@ -130,6 +211,17 @@
   window.skipFolderStep = function(){
     var ov = document.getElementById('folderStepOverlay');
     if(ov) ov.style.display = 'none';
+
+    // Mark files as skipped in flow state
+    window._flowState.filesSkipped = true;
+    window._flowState.filesDone = false;
+
+    // Update navbar: files step skipped, move to dashboard per schema
+    navSetStep('dashboard');
+
+    // Show persistent warning banner — schema requires files for full analysis
+    var banner = document.getElementById('schemaBanner');
+    if(banner) banner.style.display = 'flex';
   };
 
   // ---- INIT on DOMContentLoaded ----
@@ -137,12 +229,28 @@
     setTimeout(checkAuthOnLoad, 300);
   });
 
+  // Expose _completeAuth for external use (email verify step etc.)
+  window._completeAuth = _completeAuth;
+
   // Expose for external use (e.g. logout)
   window.logoutAuth = function(){
     localStorage.removeItem('authUser');
     location.reload();
   };
 })();
+
+
+// ══════════════════════════════════════════════════════════
+// EMAILJS CONFIGURATION
+// To enable real email verification:
+// 1. Sign up at https://www.emailjs.com (free)
+// 2. Create an Email Service (connect your Gmail)
+// 3. Create a Template with variables: {{to_name}}, {{to_email}}, {{verification_code}}
+// 4. Replace the values below with your actual IDs
+// ══════════════════════════════════════════════════════════
+var EMAILJS_SERVICE_ID  = 'YOUR_SERVICE_ID';
+var EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';
+var EMAILJS_PUBLIC_KEY  = 'YOUR_PUBLIC_KEY';
 
 
 // ══════════════════════════════════════════════════════════
@@ -266,15 +374,29 @@ function hideOnboardingProfile(){
 }
 function goToProfileFromOnboarding(){
   hideOnboardingProfile();
+  // Profile being filled — mark as active in schema, move to files after
+  window._flowState.profileDone = true;
+  window._flowState.profileSkipped = false;
+  navSetStep('files');
   setTimeout(function(){
     if(typeof openProfileModal==='function') openProfileModal();
     var titleEl = document.getElementById('profileModalTitle');
     if(titleEl) titleEl.textContent = '\u270f\ufe0f השלם את הפרופיל שלך';
   }, 150);
+  // After profile, go to folder step per schema
+  setTimeout(function(){
+    if(typeof showFolderStepIfNeeded==='function') showFolderStepIfNeeded();
+  }, 500);
 }
 function skipOnboardingProfile(){
   hideOnboardingProfile();
   localStorage.setItem('onboardingProfileSkipped','1');
+
+  // Mark profile as skipped in flow state — schema continues to files step
+  window._flowState.profileSkipped = true;
+  navSetStep('files');
+
+  // Continue to next mandatory step: file upload (per schema)
   setTimeout(function(){
     if(typeof showFolderStepIfNeeded==='function') showFolderStepIfNeeded();
   }, 300);
@@ -435,17 +557,57 @@ function _showEmailVerify(email, name, provider){
   }
   var inp = document.getElementById('verifyCodeInput');
   if(inp){ inp.value=''; setTimeout(function(){ inp.focus(); },200); }
+
+  // Generate a fresh 6-digit code and (try to) send it
+  var code = String(Math.floor(100000 + Math.random() * 900000));
+  window._verifyCode = code;
+  _sendVerificationEmail(email, name, code);
+}
+
+function _sendVerificationEmail(email, name, code){
+  var note = document.getElementById('verifyCodeNote');
+  // Demo mode: EmailJS not configured yet
+  if(EMAILJS_SERVICE_ID === 'YOUR_SERVICE_ID'){
+    if(note){ note.textContent = '\u05DE\u05E6\u05D1 \u05D4\u05D3\u05D2\u05DE\u05D4 \u2014 \u05D4\u05E7\u05D5\u05D3 \u05E9\u05DC\u05DA: ' + code; note.style.color='#f59e0b'; }
+    return;
+  }
+  // EmailJS SDK not loaded
+  if(typeof emailjs === 'undefined'){
+    if(note){ note.textContent = 'EmailJS \u05DC\u05D0 \u05E0\u05D8\u05E2\u05DF \u2014 \u05E7\u05D5\u05D3: ' + code; note.style.color='#f97316'; }
+    return;
+  }
+  if(note){ note.textContent = '\u05E9\u05D5\u05DC\u05D7 \u05E7\u05D5\u05D3...'; note.style.color='#94a3b8'; }
+  emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+    to_email: email,
+    to_name:  name || email,
+    verification_code: code
+  }, EMAILJS_PUBLIC_KEY).then(function(){
+    if(note){ note.textContent = '\u2705 \u05E7\u05D5\u05D3 \u05E0\u05E9\u05DC\u05D7 \u05DC-' + email; note.style.color='#22c55e'; }
+  }, function(err){
+    console.error('EmailJS error:', err);
+    // Fallback: show code on screen so registration isn't fully blocked
+    if(note){ note.textContent = '\u05E9\u05D2\u05D9\u05D0\u05D4 \u05D1\u05E9\u05DC\u05D9\u05D7\u05D4 \u2014 \u05E7\u05D5\u05D3: ' + code; note.style.color='#f97316'; }
+  });
 }
 
 function checkVerifyCode(){
   var inp = document.getElementById('verifyCodeInput');
-  if(!inp || inp.value.replace(/\s/g,'') !== '123456') return;
+  if(!inp) return;
+  var entered = inp.value.replace(/\s/g,'');
+  if(entered.length < 6) return; // wait for full 6 digits
+  var expected = window._verifyCode;
+  if(!expected || entered !== expected){
+    _authShake(inp);
+    _showAuthError('\u05E7\u05D5\u05D3 \u05E9\u05D2\u05D5\u05D9 \u2014 \u05D1\u05D3\u05D5\u05E7 \u05D0\u05EA \u05D4\u05DE\u05D9\u05D9\u05DC \u05E9\u05DC\u05DA');
+    return;
+  }
   var step = document.getElementById('emailVerifyStep');
   var name = step && step._pendingName;
   var email= step && step._pendingEmail;
   var prov = step && step._pendingProvider;
   if(step) step.style.display='none';
-  if(typeof _completeAuth==='function') _completeAuth(name||'', email||'', prov||'email');
+  window._verifyCode = null;
+  if(typeof window._completeAuth==='function') window._completeAuth(name||'', email||'', prov||'email');
 }
 
 function skipVerifyForNow(){
@@ -454,7 +616,8 @@ function skipVerifyForNow(){
   var email= step && step._pendingEmail;
   var prov = step && step._pendingProvider;
   if(step) step.style.display='none';
-  if(typeof _completeAuth==='function') _completeAuth(name||'', email||'', prov||'email');
+  window._verifyCode = null;
+  if(typeof window._completeAuth==='function') window._completeAuth(name||'', email||'', prov||'email');
 }
 
 // Override social auth to also go through verify step
@@ -480,7 +643,7 @@ function _showOAuthSimGated(provider, type){
   var pv = document.getElementById('oauthSimProvider');
   var nm = document.getElementById('oauthSimName');
   var em = document.getElementById('oauthSimEmail');
-  if(ic) ic.textContent = provider==='Google' ? '\uD83D\uDFE6' : '\uD83D\uDFE6';
+  if(ic) ic.textContent = provider==='Google' ? '\uD83D\uDD34' : '\uD83D\uDFE6';
   if(ti) ti.textContent = '\u05DB\u05E0\u05D9\u05E1\u05D4 \u05E2\u05DD '+provider;
   if(su) su.textContent = '\u05D1\u05D2\u05E8\u05E1\u05EA \u05D4\u05DE\u05D5\u05E6\u05E8 \u05D9\u05E4\u05EA\u05D7 \u05D7\u05DC\u05D5\u05DF '+provider+' \u05DC\u05D0\u05D9\u05DE\u05D5\u05EA';
   if(pv) pv.value = type;
@@ -503,7 +666,7 @@ window.completeOAuthSim = function(){
   if(email){
     _showEmailVerify(email, name, prov);
   } else {
-    if(typeof _completeAuth==='function') _completeAuth(name,'',prov);
+    if(typeof window._completeAuth==='function') window._completeAuth(name,'',prov);
   }
 };
 

@@ -6,8 +6,58 @@
 <title>דשבורד פיננסי — ישי עוזרי</title>
 
 <link rel="stylesheet" href="styles.css">
+<!-- Chart.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body>
+
+<!-- ========== GLOBAL STICKY NAVBAR ========== -->
+<nav id="globalNav" style="
+  position:fixed;top:0;right:0;left:0;z-index:9999;
+  background:linear-gradient(90deg,#0f172a 0%,#1e293b 100%);
+  border-bottom:2px solid #1e3a5f;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;height:52px;
+  box-shadow:0 2px 12px rgba(0,0,0,0.4);
+">
+  <!-- Logo (click = go to start) -->
+  <button onclick="navGoHome()" style="
+    background:none;border:none;cursor:pointer;
+    display:flex;align-items:center;gap:10px;color:white;
+    font-family:inherit;padding:6px 10px;border-radius:10px;
+    transition:background .2s;
+  " onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='none'">
+    <span style="font-size:22px;">💰</span>
+    <span style="font-size:16px;font-weight:800;letter-spacing:1px;color:#60a5fa;">FinTrack</span>
+  </button>
+
+  <!-- Flow breadcrumb (step indicator) -->
+  <div id="navBreadcrumb" style="display:flex;align-items:center;gap:4px;font-size:12px;">
+    <span class="nav-step done" id="nav-s1">📝 רישום</span>
+    <span class="nav-arrow">›</span>
+    <span class="nav-step" id="nav-s2">👤 פרופיל</span>
+    <span class="nav-arrow">›</span>
+    <span class="nav-step" id="nav-s3">📁 קבצים</span>
+    <span class="nav-arrow">›</span>
+    <span class="nav-step" id="nav-s4">📊 דשבורד</span>
+  </div>
+
+  <!-- Right side: user + logout -->
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span id="navUserName" style="font-size:12px;color:#94a3b8;display:none;"></span>
+    <button id="navLogoutBtn" onclick="logoutAuth()" style="
+      display:none;background:rgba(239,68,68,0.15);color:#f87171;
+      border:1px solid rgba(239,68,68,0.3);border-radius:8px;
+      padding:4px 12px;font-size:12px;cursor:pointer;font-family:inherit;
+      transition:background .2s;
+    " onmouseover="this.style.background='rgba(239,68,68,0.25)'" onmouseout="this.style.background='rgba(239,68,68,0.15)'">
+      יציאה
+    </button>
+  </div>
+</nav>
+
+<!-- Push content below navbar -->
+<div style="height:52px;"></div>
 
 <!-- ========== AUTH SCREEN ========== -->
 <div id="authScreen" style="display:none;">
@@ -25,7 +75,7 @@
         <input id="verifyCodeInput" type="text" maxlength="6" placeholder="000000"
           style="width:160px;text-align:center;font-size:2em;letter-spacing:12px;border:2px solid #3b82f6;border-radius:10px;padding:12px;background:#1e293b;color:white;font-weight:700;"
           oninput="checkVerifyCode()" />
-        <p style="color:#f59e0b;font-size:12px;margin:10px 0 0;">לצורך הדגמה: הזן 123456</p>
+        <p id="verifyCodeNote" style="color:#94a3b8;font-size:12px;margin:10px 0 0;">שולח קוד אימות...</p>
       </div>
       <button onclick="skipVerifyForNow()" style="background:none;border:none;color:#64748b;font-size:13px;cursor:pointer;text-decoration:underline;">דלג — אאמת מאוחר יותר</button>
     </div>
@@ -174,6 +224,34 @@
 </div>
 
 
+<!-- ========== SCHEMA FLOW REMINDER BANNER ========== -->
+<div id="schemaBanner" style="display:none;
+  position:sticky;top:52px;z-index:900;
+  background:linear-gradient(90deg,#78350f,#92400e);
+  color:#fef3c7;padding:10px 20px;
+  display:none;align-items:center;justify-content:space-between;
+  font-size:13px;font-weight:600;gap:12px;
+  border-bottom:2px solid #d97706;
+">
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span style="font-size:18px;">⚠️</span>
+    <span id="schemaBannerText">לא הגדרת תיקיית קבצים — הניתוח יהיה מוגבל עד שתוסיף קבצים</span>
+  </div>
+  <div style="display:flex;gap:8px;flex-shrink:0;">
+    <button onclick="reopenFolderStep()" style="
+      background:#fbbf24;color:#1a1a1a;border:none;border-radius:7px;
+      padding:5px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;
+    ">📁 הגדר עכשיו</button>
+    <button onclick="document.getElementById('schemaBanner').style.display='none'" style="
+      background:transparent;color:#fcd34d;border:1px solid #fcd34d;border-radius:7px;
+      padding:5px 10px;font-size:12px;cursor:pointer;font-family:inherit;
+    ">✕</button>
+  </div>
+</div>
+
+<!-- MAIN APP — hidden until auth -->
+<div id="mainApp" style="display:none;">
+
 <!-- HEADER -->
 <div class="header">
   <div>
@@ -183,6 +261,7 @@
   <div style="display:flex;align-items:center;gap:10px;">
     <div class="header-badge">עודכן: מרץ 2026</div>
     <button onclick="openProfileModal()" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:6px 14px;font-size:13px;font-weight:700;cursor:pointer;">✏️ ערוך פרופיל</button>
+    <button onclick="openFlowGuide()" style="background:rgba(255,214,0,0.18);color:#fde68a;border:1px solid rgba(255,214,0,0.35);border-radius:8px;padding:6px 14px;font-size:13px;font-weight:700;cursor:pointer;" title="הצג הדרכה">❓ הדרכה</button>
   </div>
 </div>
 
@@ -618,8 +697,106 @@
 </div>
 
 
+</div><!-- /mainApp -->
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script src="data.js"></script>
 <script src="app.js"></script>
 <script src="auth.js"></script>
+
+<!-- ========== FLOW GUIDE MODAL ========== -->
+<div id="flowGuideModal" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;">
+  <div style="background:#0f172a;border-radius:20px;border:1px solid #1e3a5f;max-width:520px;width:94%;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,0.6);padding:28px 28px 20px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div>
+        <h2 style="color:#60a5fa;font-size:18px;font-weight:800;margin:0;">📋 הדרכת משתמש</h2>
+        <p style="color:#64748b;font-size:12px;margin:4px 0 0;">כך עובדת המערכת — שלב אחר שלב</p>
+      </div>
+      <button onclick="closeFlowGuide()" style="background:rgba(239,68,68,0.12);color:#f87171;border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer;">✕ סגור</button>
+    </div>
+
+    <!-- Steps list -->
+    <div style="display:flex;flex-direction:column;gap:10px;">
+
+      <div style="background:#1e3a5f;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+        <div style="width:38px;height:38px;border-radius:10px;background:#1e40af;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">📝</div>
+        <div style="flex:1;">
+          <div style="color:#e2e8f0;font-weight:700;font-size:14px;">שלב 1 — רישום <span style="background:#dc2626;color:white;border-radius:8px;padding:1px 8px;font-size:10px;font-weight:700;margin-right:6px;">חובה</span></div>
+          <div style="color:#94a3b8;font-size:12px;margin-top:2px;">יצירת חשבון עם שם, מייל וסיסמה</div>
+        </div>
+      </div>
+
+      <div style="text-align:center;color:#334155;font-size:18px;">↓</div>
+
+      <div style="background:#1e293b;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px;border:2px dashed #3730a3;">
+        <div style="width:38px;height:38px;border-radius:10px;background:#312e81;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">👤</div>
+        <div style="flex:1;">
+          <div style="color:#a5b4fc;font-weight:700;font-size:14px;">שלב 2 — פרופיל אישי <span style="background:#059669;color:white;border-radius:8px;padding:1px 8px;font-size:10px;font-weight:700;margin-right:6px;">אופציונלי</span></div>
+          <div style="color:#64748b;font-size:12px;margin-top:2px;">פרטים נוספים — ניתן לדלג ולמלא בהמשך</div>
+        </div>
+      </div>
+
+      <div style="text-align:center;color:#334155;font-size:18px;">↓</div>
+
+      <div style="background:#1e3a5f;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+        <div style="width:38px;height:38px;border-radius:10px;background:#166534;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">📁</div>
+        <div style="flex:1;">
+          <div style="color:#e2e8f0;font-weight:700;font-size:14px;">שלב 3 — העלאת קבצי בנק <span style="background:#dc2626;color:white;border-radius:8px;padding:1px 8px;font-size:10px;font-weight:700;margin-right:6px;">חובה</span></div>
+          <div style="color:#94a3b8;font-size:12px;margin-top:2px;">PDF / CSV / Excel — נדרש לניתוח מלא</div>
+        </div>
+      </div>
+
+      <div style="text-align:center;color:#334155;font-size:18px;">↓</div>
+
+      <!-- Parallel -->
+      <div style="background:#0d2a4a;border-radius:12px;padding:12px 16px;">
+        <div style="color:#60a5fa;font-size:11px;font-weight:700;text-align:center;margin-bottom:10px;letter-spacing:1px;">⚙️ עיבוד אוטומטי של המערכת</div>
+        <div style="display:flex;gap:10px;">
+          <div style="flex:1;background:#1e40af;border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:20px;">🏦</div>
+            <div style="color:white;font-size:12px;font-weight:700;margin-top:4px;">דפי בנק</div>
+            <div style="color:#bfdbfe;font-size:11px;">יתרות, תנועות</div>
+          </div>
+          <div style="flex:1;background:#1d4ed8;border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:20px;">💳</div>
+            <div style="color:white;font-size:12px;font-weight:700;margin-top:4px;">עסקאות</div>
+            <div style="color:#bfdbfe;font-size:11px;">הכנסות, הוצאות</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align:center;color:#334155;font-size:18px;">↓</div>
+
+      <div style="background:#1e3a5f;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+        <div style="width:38px;height:38px;border-radius:10px;background:#0369a1;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">📊</div>
+        <div style="flex:1;">
+          <div style="color:#e2e8f0;font-weight:700;font-size:14px;">שלב 4 — הצגת נתונים</div>
+          <div style="color:#94a3b8;font-size:12px;margin-top:2px;">דשבורד גרפי אינטראקטיבי</div>
+        </div>
+      </div>
+
+      <div style="text-align:center;color:#334155;font-size:18px;">↓</div>
+
+      <div style="background:#fef3c7;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+        <div style="width:38px;height:38px;border-radius:10px;background:#d97706;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">💡</div>
+        <div style="flex:1;">
+          <div style="color:#1a237e;font-weight:700;font-size:14px;">שלב 5 — תובנות חכמות</div>
+          <div style="color:#78716c;font-size:12px;margin-top:2px;">המלצות אישיות · זיהוי דפוסים · התראות</div>
+        </div>
+      </div>
+
+    </div>
+
+    <p style="color:#475569;font-size:11px;text-align:center;margin-top:16px;line-height:1.6;">
+      ניתן לחזור לדף הבית בכל שלב על ידי לחיצה על הלוגו בחלק העליון
+    </p>
+  </div>
+</div>
+
+<script>
+function openFlowGuide(){ document.getElementById('flowGuideModal').style.display='flex'; }
+function closeFlowGuide(){ document.getElementById('flowGuideModal').style.display='none'; }
+document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeFlowGuide(); });
+</script>
 </body>
 </html>
