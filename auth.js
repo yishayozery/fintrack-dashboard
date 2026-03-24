@@ -194,24 +194,21 @@ window.reopenFolderStep = function() {
 
   window.authWithEmail = function(){
     var nameEl  = document.getElementById('authNameInput');
-    var emailEl = document.getElementById('authEmailInput');
-    var passEl  = document.getElementById('authPassInput');
-    var name  = nameEl  ? nameEl.value.trim()  : '';
-    var email = emailEl ? emailEl.value.trim() : '';
+    var name  = nameEl  ? nameEl.value.trim() : '';
+    // Email comes from step 1 (stored in window._authEmail)
+    var email = window._authEmail || '';
     var mode  = window._authMode || 'register';
 
     if(mode === 'login'){
-      // Login — just need email (password stored locally only)
-      if(!email){ alert('נא להזין כתובת מייל'); if(emailEl) emailEl.focus(); return; }
+      // Login — email already confirmed in step 1
       var savedName = email.split('@')[0];
-      // Try to get name from existing profile
       try{ var p=JSON.parse(localStorage.getItem('userProfile')||'{}'); if(p.name) savedName=p.name; }catch(e){}
+      try{ var u=JSON.parse(localStorage.getItem('authUser')||'{}'); if(u.name) savedName=u.name; }catch(e){}
       _completeAuth(savedName, email, 'email');
     } else {
-      // Register — need name + email
+      // Register — need name
       if(!name && email){ name = email.split('@')[0]; }
       if(!name){ alert('נא להזין שם מלא'); if(nameEl) nameEl.focus(); return; }
-      if(!email){ alert('נא להזין כתובת מייל'); if(emailEl) emailEl.focus(); return; }
       _completeAuth(name, email, 'email');
     }
   };
@@ -519,9 +516,8 @@ function _refreshAuthBtn(){
   var mode = window._authMode || 'register';
   var ok;
   if(mode === 'login'){
-    // Login: just need email
-    var email = (document.getElementById('authEmailInput')||{}).value||'';
-    ok = email.trim().length > 3;
+    // Login: email already confirmed in step 1 — always enabled
+    ok = true;
   } else {
     // Register: need terms accepted
     ok = localStorage.getItem('termsAccepted')==='1';
@@ -531,49 +527,98 @@ function _refreshAuthBtn(){
   btn.style.cursor  = ok ? 'pointer' : 'not-allowed';
 }
 
-// ══ LOGIN / REGISTER MODE TOGGLE ══
+// ══ SMART 2-STEP EMAIL FLOW ══
+window._authEmail = '';
+
+window.checkEmailAndContinue = function(){
+  var emailEl = document.getElementById('authEmailInput');
+  var email = emailEl ? emailEl.value.trim() : '';
+  if(!email || email.indexOf('@') < 1 || email.indexOf('.') < 2){
+    if(emailEl){ emailEl.focus(); emailEl.style.borderColor='#ef4444'; }
+    setTimeout(function(){ if(emailEl) emailEl.style.borderColor=''; }, 1500);
+    return;
+  }
+  window._authEmail = email;
+
+  // Check if this email is already registered in localStorage
+  var existingUser = null;
+  try{ existingUser = JSON.parse(localStorage.getItem('authUser')); }catch(e){}
+  var isReturning = !!(existingUser && existingUser.email &&
+    existingUser.email.toLowerCase() === email.toLowerCase());
+
+  // Set auth mode
+  window._authMode = isReturning ? 'login' : 'register';
+
+  // Build welcome header
+  var hdr = document.getElementById('authStep2Header');
+  if(hdr){
+    if(isReturning){
+      var displayName = existingUser.name || email.split('@')[0];
+      hdr.innerHTML = '<h2 style="color:#f1f5f9;font-size:1.25em;font-weight:800;margin:0 0 4px;">שלום חזרה, '+displayName+'! 👋</h2>'
+        +'<p style="color:#64748b;font-size:13px;margin:0;">הזן סיסמה כדי להיכנס לחשבון שלך</p>';
+    } else {
+      hdr.innerHTML = '<h2 style="color:#f1f5f9;font-size:1.25em;font-weight:800;margin:0 0 4px;">ברוך הבא! 🎉</h2>'
+        +'<p style="color:#64748b;font-size:13px;margin:0;">יוצרים חשבון חדש — חינמי לחלוטין</p>';
+    }
+  }
+
+  // Show email chip
+  var chip = document.getElementById('authEmailShown');
+  if(chip) chip.textContent = email;
+
+  // Show/hide name + terms based on mode
+  var nameRow  = document.getElementById('authNameRow');
+  var termsRow = document.getElementById('authTermsRow');
+  if(nameRow)  nameRow.style.display  = isReturning ? 'none' : 'block';
+  if(termsRow) termsRow.style.display = isReturning ? 'none' : 'flex';
+
+  // Update submit button label
+  var btn = document.getElementById('authMainBtn');
+  if(btn) btn.textContent = isReturning ? 'כניסה' : 'הרשמה חינמית';
+
+  _refreshAuthBtn();
+
+  // Switch to step 2
+  var s1 = document.getElementById('authStep1');
+  var s2 = document.getElementById('authStep2');
+  if(s1) s1.style.display = 'none';
+  if(s2) s2.style.display = 'block';
+
+  // Focus password
+  setTimeout(function(){
+    var p = document.getElementById('authPassInput');
+    if(p){ p.value = ''; p.focus(); }
+  }, 80);
+};
+
+window.goBackToEmailStep = function(){
+  var s1 = document.getElementById('authStep1');
+  var s2 = document.getElementById('authStep2');
+  if(s1) s1.style.display = 'block';
+  if(s2) s2.style.display = 'none';
+  setTimeout(function(){
+    var e = document.getElementById('authEmailInput');
+    if(e){ e.focus(); e.select(); }
+  }, 80);
+};
+
+// ══ LOGIN / REGISTER MODE TOGGLE (kept for OAuth flow compatibility) ══
 window._authMode = 'register';
 window.setAuthMode = function(mode){
   window._authMode = mode;
-  var nameRow     = document.getElementById('authNameRow');
-  var termsRow    = document.getElementById('authTermsRow');
-  var passWrap    = document.getElementById('passStrengthWrap');
-  var title       = document.getElementById('authModeTitle');
-  var subtitle    = document.getElementById('authModeSubtitle');
-  var mainBtn     = document.getElementById('authMainBtn');
-  var switchText  = document.getElementById('authSwitchText');
-  var switchBtn   = document.getElementById('authSwitchBtn');
-  var googleTxt   = document.getElementById('googleBtnText');
-  var facebookTxt = document.getElementById('facebookBtnText');
-  var tabReg      = document.getElementById('tabRegister');
-  var tabLog      = document.getElementById('tabLogin');
-
+  // In the new 2-step flow, show/hide is handled by checkEmailAndContinue.
+  // This function is kept for OAuth sim compatibility and direct calls.
+  var nameRow  = document.getElementById('authNameRow');
+  var termsRow = document.getElementById('authTermsRow');
+  var mainBtn  = document.getElementById('authMainBtn');
   if(mode === 'login'){
-    if(nameRow)    nameRow.style.display    = 'none';
-    if(termsRow)   termsRow.style.display   = 'none';
-    if(passWrap)   passWrap.style.display   = 'none';
-    if(title)      title.textContent        = 'כניסה לחשבון';
-    if(subtitle)   subtitle.textContent     = 'ברוך שובך! הזן מייל וסיסמה';
-    if(mainBtn)    mainBtn.textContent      = 'כניסה';
-    if(switchText) switchText.textContent   = 'עדיין אין לך חשבון?';
-    if(switchBtn)  { switchBtn.textContent  = 'הרשמה ←'; switchBtn.onclick = function(){ window.setAuthMode('register'); }; }
-    if(googleTxt)  googleTxt.textContent    = 'כניסה עם Google';
-    if(facebookTxt)facebookTxt.textContent  = 'כניסה עם Facebook';
-    // Tab styling
-    if(tabLog) { tabLog.style.background='#3b82f6'; tabLog.style.color='white'; }
-    if(tabReg) { tabReg.style.background='transparent'; tabReg.style.color='#64748b'; }
+    if(nameRow)  nameRow.style.display  = 'none';
+    if(termsRow) termsRow.style.display = 'none';
+    if(mainBtn)  mainBtn.textContent    = 'כניסה';
   } else {
-    if(nameRow)    nameRow.style.display    = 'block';
-    if(termsRow)   termsRow.style.display   = 'flex';
-    if(title)      title.textContent        = 'יצירת חשבון חדש';
-    if(subtitle)   subtitle.textContent     = 'הצטרף בחינם ותתחיל לנתח את הכספים שלך';
-    if(mainBtn)    mainBtn.textContent      = 'הרשמה';
-    if(switchText) switchText.textContent   = 'כבר יש לך חשבון?';
-    if(switchBtn)  { switchBtn.textContent  = 'כניסה ←'; switchBtn.onclick = function(){ window.setAuthMode('login'); }; }
-    if(googleTxt)  googleTxt.textContent    = 'הרשמה עם Google';
-    if(facebookTxt)facebookTxt.textContent  = 'הרשמה עם Facebook';
-    if(tabReg) { tabReg.style.background='#3b82f6'; tabReg.style.color='white'; }
-    if(tabLog) { tabLog.style.background='transparent'; tabLog.style.color='#64748b'; }
+    if(nameRow)  nameRow.style.display  = 'block';
+    if(termsRow) termsRow.style.display = 'flex';
+    if(mainBtn)  mainBtn.textContent    = 'הרשמה חינמית';
   }
   _refreshAuthBtn();
 };
