@@ -124,37 +124,80 @@ window.reopenFolderStep = function() {
 
 // ===== AUTH SYSTEM =====
 (function(){
+  // ── Helper: what steps has this user already completed? ──
+  function _getFlowStatus(){
+    var profile = null;
+    try{ profile = JSON.parse(localStorage.getItem('userProfile')||'{}'); }catch(e){}
+    return {
+      profileDone:    !!(profile && profile.name && profile.name.length > 0),
+      profileSkipped: localStorage.getItem('onboardingProfileSkipped') === '1',
+      hasFolder:      !!(_appSettings && _appSettings.folderPath)
+    };
+  }
+  window._getFlowStatus = _getFlowStatus;
+
   // Called after DOM ready
   function checkAuthOnLoad(){
     var saved = null;
     try { saved = JSON.parse(localStorage.getItem('authUser')); } catch(e){}
     if(saved && saved.name){
-      // Already logged in — sync to profile and show dashboard
+      // Already logged in — sync to profile
       if(!userProfile.name) { userProfile.name = saved.name; }
       if(!userProfile.email && saved.email) { userProfile.email = saved.email; }
       updateHeaderUser();
 
-      // Update navbar for returning user
       window._flowState.registered = true;
       navShowUser(saved.name);
-      var hasFolder = (_appSettings && _appSettings.folderPath);
-      navSetStep(hasFolder ? 'dashboard' : 'files');
 
       // Show main app
       var ma = document.getElementById('mainApp');
       if(ma) ma.style.display = 'block';
 
-      // Check folder — follow schema: show folder step if not configured
-      if(!hasFolder){
-        setTimeout(showFolderStepIfNeeded, 700);
+      var fs = _getFlowStatus();
+      var profileClear = fs.profileDone || fs.profileSkipped;
+
+      if(!profileClear){
+        // NEW USER: profile not yet filled or skipped
+        navSetStep('profile');
+        setTimeout(showOnboardingProfile, 600);
+
+      } else if(!fs.hasFolder){
+        // Profile done, but no folder yet
+        navSetStep('files');
+        setTimeout(showFolderStepIfNeeded, 600);
+
+      } else {
+        // RETURNING USER: all set — straight to dashboard
+        navSetStep('dashboard');
+        if(typeof _checkShowNoData === 'function') _checkShowNoData();
+        _showReturningBanner(saved.name);
       }
+
     } else {
-      // Show auth screen — first step in schema
+      // Not logged in — show auth screen
       navSetStep('register');
       var el = document.getElementById('authScreen');
       if(el) el.style.display = 'flex';
     }
   }
+
+  // ── Show subtle welcome-back banner with "load files" CTA ──
+  function _showReturningBanner(name){
+    var banner = document.getElementById('returningUserBanner');
+    if(!banner) return;
+    var nameEl = document.getElementById('returningUserName');
+    if(nameEl) nameEl.textContent = name;
+    banner.style.display = 'flex';
+    // Auto-dismiss after 8 seconds
+    setTimeout(function(){
+      if(banner && banner.style.display !== 'none'){
+        banner.style.transition = 'opacity 0.6s';
+        banner.style.opacity = '0';
+        setTimeout(function(){ if(banner){ banner.style.display='none'; banner.style.opacity='1'; } }, 600);
+      }
+    }, 8000);
+  }
+  window._showReturningBanner = _showReturningBanner;
 
   window.authWithGoogle = function(){
     _showOAuthSim('Google', 'google', '\uD83C\uDD71\uFE0F');
