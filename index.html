@@ -42,8 +42,19 @@
     <span class="nav-step" id="nav-s4">📊 דשבורד</span>
   </div>
 
-  <!-- Right side: user + logout -->
-  <div style="display:flex;align-items:center;gap:10px;">
+  <!-- Right side: advisor badge + user + logout -->
+  <div style="display:flex;align-items:center;gap:8px;">
+    <!-- Advisor badge — shown after login -->
+    <button id="navAdvisorBtn" onclick="openAdvisorSelection()" style="
+      display:none;align-items:center;gap:6px;
+      background:rgba(59,130,246,0.12);color:#93c5fd;
+      border:1px solid rgba(59,130,246,0.25);border-radius:8px;
+      padding:4px 10px;font-size:11px;cursor:pointer;font-family:inherit;
+      transition:background .2s;white-space:nowrap;
+    " onmouseover="this.style.background='rgba(59,130,246,0.22)'" onmouseout="this.style.background='rgba(59,130,246,0.12)'">
+      <span id="navAdvisorIcon">👔</span>
+      <span id="navAdvisorLabel">יועץ כלכלי</span>
+    </button>
     <span id="navUserName" style="font-size:12px;color:#94a3b8;display:none;"></span>
     <button id="navLogoutBtn" onclick="logoutAuth()" style="
       display:none;background:rgba(239,68,68,0.15);color:#f87171;
@@ -246,6 +257,56 @@
       background:transparent;color:#fcd34d;border:1px solid #fcd34d;border-radius:7px;
       padding:5px 10px;font-size:12px;cursor:pointer;font-family:inherit;
     ">✕</button>
+  </div>
+</div>
+
+<!-- ═══ PROCESSING OVERLAY — shown after folder selection ═══ -->
+<div id="processingOverlay" style="display:none;position:fixed;inset:0;z-index:13000;background:rgba(0,0,0,0.92);align-items:center;justify-content:center;direction:rtl;flex-direction:column;">
+  <div style="text-align:center;max-width:420px;padding:0 24px;">
+    <div style="font-size:3em;margin-bottom:16px;" id="procIcon">⚙️</div>
+    <h2 style="color:#f1f5f9;font-size:1.4em;margin:0 0 8px;" id="procTitle">מעבד את הקבצים שלך...</h2>
+    <p style="color:#94a3b8;font-size:13px;margin:0 0 28px;" id="procSub">המערכת מנתחת את דפי הבנק וכרטיסי האשראי</p>
+    <!-- Progress bar -->
+    <div style="background:#1e293b;border-radius:100px;height:8px;overflow:hidden;margin-bottom:24px;">
+      <div id="procBar" style="height:100%;border-radius:100px;background:linear-gradient(90deg,#3b82f6,#06b6d4);width:0%;transition:width 0.6s ease;"></div>
+    </div>
+    <!-- Steps list -->
+    <div id="procSteps" style="text-align:right;display:flex;flex-direction:column;gap:10px;"></div>
+  </div>
+</div>
+
+<!-- ═══ NO-DATA EMPTY STATE OVERLAY ═══ -->
+<div id="noDataOverlay" style="display:none;position:fixed;inset:0;z-index:12000;background:rgba(2,6,23,0.96);align-items:center;justify-content:center;direction:rtl;padding:20px;">
+  <div style="text-align:center;max-width:500px;">
+    <div style="font-size:4em;margin-bottom:16px;">📂</div>
+    <h2 style="color:#f1f5f9;font-size:1.5em;margin:0 0 12px;font-weight:800;">ברוך הבא ל-FinTrack!</h2>
+    <p style="color:#94a3b8;font-size:14px;line-height:1.7;margin:0 0 28px;">
+      כדי להתחיל, יש לחבר את הקבצים הפיננסיים שלך.<br>
+      המערכת תנתח אוטומטית דפי בנק, כרטיסי אשראי ועסקאות.
+    </p>
+    <!-- Steps preview -->
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:32px;text-align:right;">
+      <div style="background:#0f172a;border:1px solid #1e3a5f;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:12px;">
+        <span style="font-size:1.4em;">1️⃣</span>
+        <div><div style="color:#e2e8f0;font-weight:700;font-size:13px;">בחר תיקיית קבצים</div><div style="color:#64748b;font-size:11px;">PDF / Excel / CSV של בנקים וכרטיסי אשראי</div></div>
+      </div>
+      <div style="background:#0f172a;border:1px solid #1e3a5f;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:12px;">
+        <span style="font-size:1.4em;">2️⃣</span>
+        <div><div style="color:#e2e8f0;font-weight:700;font-size:13px;">אישור דפי הבנק</div><div style="color:#64748b;font-size:11px;">בדיקת יתרות, הכנסות, ותנועות מאוחדות</div></div>
+      </div>
+      <div style="background:#0f172a;border:1px solid #1e3a5f;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:12px;">
+        <span style="font-size:1.4em;">3️⃣</span>
+        <div><div style="color:#e2e8f0;font-weight:700;font-size:13px;">סיווג עסקאות</div><div style="color:#64748b;font-size:11px;">אישור קטגוריות, סימון חריגים, העברה לבדיקה</div></div>
+      </div>
+      <div style="background:#0f172a;border:1px solid #1e3a5f;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:12px;">
+        <span style="font-size:1.4em;">4️⃣</span>
+        <div><div style="color:#e2e8f0;font-weight:700;font-size:13px;">דשבורד + תובנות</div><div style="color:#64748b;font-size:11px;">ניתוח מלא, גרפים, והמלצות אישיות</div></div>
+      </div>
+    </div>
+    <button onclick="if(typeof openSetupWizard==='function') openSetupWizard(); else if(typeof showFolderStepIfNeeded==='function') showFolderStepIfNeeded();"
+      style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:white;border:none;border-radius:12px;padding:14px 32px;font-size:15px;font-weight:700;cursor:pointer;width:100%;max-width:280px;">
+      📁 חבר קבצים עכשיו
+    </button>
   </div>
 </div>
 

@@ -31,8 +31,21 @@ function navSetStep(stepKey) {
 function navShowUser(name) {
   var el = document.getElementById('navUserName');
   var lb = document.getElementById('navLogoutBtn');
+  var ab = document.getElementById('navAdvisorBtn');
   if(el) { el.textContent = '👤 ' + name; el.style.display = 'inline'; }
   if(lb) lb.style.display = 'inline-block';
+  if(ab) {
+    ab.style.display = 'inline-flex';
+    // Reflect already-chosen advisor if exists
+    var stored = null;
+    try{ stored = JSON.parse(localStorage.getItem('selectedPlatformAdvisor')); }catch(e){}
+    if(stored) {
+      var icon = document.getElementById('navAdvisorIcon');
+      var label = document.getElementById('navAdvisorLabel');
+      if(icon) icon.textContent = stored.emoji;
+      if(label) label.textContent = stored.name;
+    }
+  }
 }
 
 window.navGoHome = function() {
@@ -957,7 +970,11 @@ window.selectAdvisor = function(id){
   var ov = document.getElementById('advisorSelectionOverlay');
   if(ov) ov.style.display = 'none';
   if(typeof showToast==='function') showToast('🤝 '+a.name+' נבחר כמלווה שלך!');
-  showFolderStepIfNeeded();
+  // Update navbar badge
+  var icon = document.getElementById('navAdvisorIcon');
+  var label = document.getElementById('navAdvisorLabel');
+  if(icon) icon.textContent = a.emoji;
+  if(label) label.textContent = a.name;
   // Render in management tab if visible
   renderSelectedAdvisorBanner();
 };
@@ -995,33 +1012,8 @@ window.openAdvisorSelectionChange = function(){
   openAdvisorSelection();
 };
 
-// Hook into onboarding: show advisor selection after profile step
-;(function(){
-  var _origSkipProfile = window.skipOnboardingProfile || skipOnboardingProfile;
-  // We patch skipOnboardingProfile to route through advisor selection
-  var _orig = skipOnboardingProfile;
-  skipOnboardingProfile = function(){
-    hideOnboardingProfile();
-    localStorage.setItem('onboardingProfileSkipped','1');
-    window._flowState.profileSkipped = true;
-    navSetStep('files');
-    setTimeout(openAdvisorSelection, 300);
-  };
-
-  // Also patch goToProfileFromOnboarding's folder redirect
-  var _origGoTo = goToProfileFromOnboarding;
-  goToProfileFromOnboarding = function(){
-    hideOnboardingProfile();
-    window._flowState.profileDone = true;
-    window._flowState.profileSkipped = false;
-    navSetStep('files');
-    setTimeout(function(){
-      if(typeof openProfileModal==='function') openProfileModal();
-    }, 150);
-    // After profile, show advisor selection (not folder directly)
-    setTimeout(openAdvisorSelection, 600);
-  };
-})();
+// Advisor selection is accessed from the navbar (not onboarding flow)
+// skipOnboardingProfile and goToProfileFromOnboarding go directly to folder step
 
 // Render advisor banner when management tab is rendered
 ;(function(){

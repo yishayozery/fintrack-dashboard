@@ -115,11 +115,11 @@ function bulkEscalate(){
 }
 const TX_PAGE = 15;
 let disputeItems = [];  // [{issueKey, issue, message, merchantEmail, thread:[{role,text,ts}], status}]
-// Pre-defined unclear items from new bank/CC data
+// Review items — populated dynamically when files are loaded (empty until then)
 const MANUAL_REVIEW_ITEMS = [
-  {key:'unclear-ntb',icon:'❓',title:'נ.ת.ב ניהול תביעות — ₪1,600',severity:'warning',
-   reason:'כרטיס *2039, פברואר 2026 — "נ.ת.ב ניהול תביעות ב" ₪1,600. מה זה? שירות ניהול תביעות ביטוח? בדוק האם הוצאה זו מוכרת ולמה.',
-   tx:{id:90,date:'11-01-2026',name:'נ.ת.ב ניהול תביעות ב',cat:'שונות',card:'*2039',amount:1600,month:'פברואר 2026',src:'*2039 מסטרקארד'}},
+  // Items are added here when bank/CC files are uploaded and parsed
+  // {key, icon, title, severity, reason, tx}
+  /* PLACEHOLDER — cleared for fresh install
   {key:'unclear-standing',icon:'❓',title:'הוראת קבע ₪2,266 — ינואר',severity:'warning',
    reason:'בנק לאומי: "הוראת קבע" ₪2,266 בינואר (ובדצמבר 2025). לא ברור למי ועבור מה. בדוק בפירוט החשבון.',
    tx:{id:201,date:'11-01-2026',name:'הוראת קבע — ינואר',cat:'שונות',card:'בנק לאומי',amount:2266,month:'ינואר 2026',src:'בנק לאומי'}},
@@ -127,20 +127,7 @@ const MANUAL_REVIEW_ITEMS = [
    reason:'כרטיס *2039: הפניקס חיים ובריאות — ינואר ₪452.13 → פברואר ₪675.66 (עלייה של +49.4%). מה השתנה בפוליסה? בדוק מול הפניקס.',
    tx:{id:89,date:'28-01-2026',name:'הפניקס חיים ובריאות',cat:'ביטוח ובריאות',card:'*2039',amount:675.66,month:'פברואר 2026',src:'*2039 מסטרקארד'}},
   {key:'unclear-emirates',icon:'✈️',title:'EMIRATES ₪21,830 — חיוב ענק',severity:'warning',
-   reason:'כרטיס *2039 פברואר: EMIRATES ₪21,829.90 ($6,851.82) — כרטיס טיסה ל-Dubai/פיליפינים? ודא שמדובר בקנייה מוכרת ושאין חיוב כפול. ייתכן חיסכון בפרמיית הנחה ₪633.',
-   tx:{id:95,date:'23-12-25',name:'EMIRATES',cat:'נסיעות לחו"ל',card:'*2039',amount:21829.90,month:'פברואר 2026',src:'חו"ל'}},
-  {key:'unclear-hot-repeat',icon:'🔁',title:'הוט מועדון × 3-4 בחודש',severity:'warning',
-   reason:'כרטיס *9781: "הוט מועדון צרכנות" ₪472.50 × 3 בינואר (₪1,417.50) ו× 4 במרץ (₪1,890). האם מדובר במנויים שונים? קשים לסיווג — ודא שזה אינו חיוב כפול.',
-   tx:{id:130,date:'31-12-25',name:'הוט מועדון צרכנות',cat:'מנויים דיגיטליים',card:'*9781',amount:472.50,month:'ינואר 2026',src:'*9781 לאומי'}},
-  {key:'unclear-bituach-large',icon:'❓',title:'ביטוח לאומי ₪13-14K לחודש',severity:'info',
-   reason:'בנק לאומי: ביטוח לאומי ח-י — ינואר ₪14,381 | פברואר ₪13,218 | דצמבר ₪13,316. סכום גדול מאוד. האם מדובר בהכנסה עצמאית (נה"ח), קצבת נכות, קצבת ילדים, או תשלום אחר? זהה את המקור.',
-   tx:{id:202,date:'12-01-2026',name:'ביטוח לאומי — הכנסה ח-י',cat:'הכנסה מביטוח לאומי',card:'בנק לאומי',amount:14381,month:'ינואר 2026',src:'בנק לאומי'}},
-  {key:'unclear-fibi-50k',icon:'🔄',title:'₪50,000 מלאומי לפיבי — לא הכנסה',severity:'info',
-   reason:'הבנת שגויה תוקנה: ₪50,000 "זיכוי" בבנק פיבי (06.02.26) הוא העברה מבנק לאומי לפיבי — לא הכנסה חדשה. ההכנסה האמיתית היא ₪22,156 ממסוף העברות בלאומי.',
-   tx:{id:203,date:'06-02-2026',name:'העברה דיגיטלית לחשבון פיבי',cat:'העברות בין חשבונות',card:'בנק לאומי',amount:50000,month:'פברואר 2026',src:'בנק לאומי'}},
-  {key:'unclear-makabi-drop',icon:'📉',title:'קרן מכבי: ירידת 85% מינואר לפברואר',severity:'info',
-   reason:'כרטיס *5232: קרן מכבי — ינואר ₪214.64 → פברואר ₪33 (ירידה של 85%). ייתכן חידוש שנתי בינואר ותשלום חודשי בפברואר. ודא שהמנוי תקין.',
-   tx:{id:88,date:'02-12-25',name:'קרן מכבי — חיוב',cat:'ביטוח ובריאות',card:'*5232',amount:214.64,month:'ינואר 2026',src:'*5232 מסטרקארד'}},
+   END PLACEHOLDER */
 ];
 
 // ═══════════════════════════════════════
@@ -2277,7 +2264,95 @@ document.addEventListener('DOMContentLoaded',()=>{
   renderAll();
   window._activeTab = 'transactions';
   _wfRenderBar('transactions');
+  // Show empty state if no transactions loaded
+  _checkShowNoData();
 });
+
+// ═══════════════════════════════════════
+// EMPTY STATE + PROCESSING OVERLAY
+// ═══════════════════════════════════════
+function _checkShowNoData(){
+  var hasData = TRANSACTIONS && TRANSACTIONS.length > 0;
+  var overlay = document.getElementById('noDataOverlay');
+  if(!overlay) return;
+  // Only show if user is logged in and mainApp is visible
+  var mainApp = document.getElementById('mainApp');
+  var isLoggedIn = !!localStorage.getItem('authUser');
+  if(!hasData && isLoggedIn && mainApp && mainApp.style.display !== 'none'){
+    overlay.style.display = 'flex';
+  } else {
+    overlay.style.display = 'none';
+  }
+}
+window._checkShowNoData = _checkShowNoData;
+
+// Processing animation after folder is chosen
+window.showProcessingScreen = function(onDone){
+  var ov = document.getElementById('processingOverlay');
+  if(!ov) { if(onDone) onDone(); return; }
+
+  var steps = [
+    {icon:'🔍', label:'סורק קבצים בתיקייה...'},
+    {icon:'📄', label:'מאחד דפי בנק וכרטיסי אשראי...'},
+    {icon:'🏷️', label:'מסווג עסקאות לפי קטגוריה...'},
+    {icon:'📊', label:'מחשב תזרים חודשי...'},
+    {icon:'💡', label:'מזהה חריגים ותובנות...'},
+    {icon:'✅', label:'הדשבורד מוכן!'}
+  ];
+
+  var stepsEl = document.getElementById('procSteps');
+  var barEl = document.getElementById('procBar');
+  var titleEl = document.getElementById('procTitle');
+  var subEl = document.getElementById('procSub');
+  var iconEl = document.getElementById('procIcon');
+
+  stepsEl.innerHTML = '';
+  barEl.style.width = '0%';
+  ov.style.display = 'flex';
+
+  var i = 0;
+  function nextStep(){
+    if(i >= steps.length){
+      setTimeout(function(){
+        ov.style.display = 'none';
+        var noData = document.getElementById('noDataOverlay');
+        if(noData) noData.style.display = 'none';
+        if(onDone) onDone();
+      }, 600);
+      return;
+    }
+    var s = steps[i];
+    if(iconEl) iconEl.textContent = s.icon;
+    if(titleEl) titleEl.textContent = s.label;
+
+    // Add step row
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #1e293b;opacity:0;transition:opacity 0.3s;';
+    row.innerHTML = '<span style="color:#22c55e;font-size:14px;">✓</span>'
+      + '<span style="color:#e2e8f0;font-size:13px;">'+s.label+'</span>';
+    stepsEl.appendChild(row);
+    setTimeout(function(){ row.style.opacity='1'; }, 50);
+
+    var pct = Math.round(((i+1)/steps.length)*100);
+    barEl.style.width = pct+'%';
+    i++;
+    setTimeout(nextStep, 700);
+  }
+  nextStep();
+};
+
+// Hook into folder save to show processing screen
+;(function(){
+  var _origSaveFolder = window.saveFolderPath;
+  if(typeof _origSaveFolder === 'function'){
+    window.saveFolderPath = function(){
+      _origSaveFolder.apply(this, arguments);
+      window.showProcessingScreen(function(){
+        window._checkShowNoData && window._checkShowNoData();
+      });
+    };
+  }
+})();
 
 // ═══════════════════════════════════════
 // DRILL-DOWN MODAL

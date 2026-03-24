@@ -28,7 +28,33 @@
 
 :root{--primary:#1a56db;--primary-light:#e8f0fe;--success:#0e9f6e;--success-light:#def7ec;--danger:#e02424;--danger-light:#fde8e8;--warning:#d97706;--warning-light:#fef3c7;--gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;--gray-300:#d1d5db;--gray-500:#6b7280;--gray-700:#374151;--gray-900:#111827;--radius:12px;--shadow:0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06);}
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;background:#f0f4f8;color:var(--gray-900);direction:rtl;font-size:14px;}
+html, body {
+  height: 100%;
+  overflow: hidden; /* no page scroll — sections scroll internally */
+}
+body{
+  font-family:-apple-system,'Segoe UI',Arial,sans-serif;
+  background:#f0f4f8;
+  color:var(--gray-900);
+  direction:rtl;
+  font-size:14px;
+  display:flex;
+  flex-direction:column;
+}
+/* Main app fills remaining height under the fixed navbar */
+#mainApp {
+  position: fixed;
+  top: 52px; /* navbar height */
+  right: 0; left: 0; bottom: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+/* Tab content areas scroll independently */
+.tab-content.active {
+  height: calc(100vh - 52px - 108px); /* viewport - navbar - tab bar */
+  overflow-y: auto;
+  overflow-x: hidden;
+}
 
 /* HEADER */
 .header{background:linear-gradient(135deg,#1a56db 0%,#1e40af 100%);color:white;padding:20px 32px;display:flex;align-items:center;justify-content:space-between;}
