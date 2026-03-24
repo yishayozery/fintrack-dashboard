@@ -10,6 +10,16 @@ function navSetStep(stepKey) {
   var ids = { register:'nav-s1', profile:'nav-s2', files:'nav-s3', dashboard:'nav-s4' };
   var order = ['register','profile','files','dashboard'];
   var idx = order.indexOf(stepKey);
+  var bc = document.getElementById('navBreadcrumb');
+
+  // Hide breadcrumb once on dashboard — only show during onboarding
+  if(stepKey === 'dashboard') {
+    if(bc) bc.style.display = 'none';
+    return;
+  }
+  // Show breadcrumb during onboarding steps
+  if(bc) bc.style.display = 'flex';
+
   order.forEach(function(k, i){
     var el = document.getElementById(ids[k]);
     if(!el) return;
@@ -29,14 +39,20 @@ function navSetStep(stepKey) {
 }
 
 function navShowUser(name) {
-  var el = document.getElementById('navUserName');
-  var lb = document.getElementById('navLogoutBtn');
+  // User dropdown button (replaces old separate name + logout)
+  var userBtn = document.getElementById('navUserBtn');
+  var nameEl  = document.getElementById('navUserName');
+  if(nameEl)  { nameEl.textContent = '👤 ' + name; }
+  if(userBtn) { userBtn.style.display = 'inline-flex'; }
+
+  // Breadcrumb: show during onboarding, hide once on dashboard
+  var bc = document.getElementById('navBreadcrumb');
+  if(bc) bc.style.display = 'flex';
+
+  // Advisor badge
   var ab = document.getElementById('navAdvisorBtn');
-  if(el) { el.textContent = '👤 ' + name; el.style.display = 'inline'; }
-  if(lb) lb.style.display = 'inline-block';
   if(ab) {
     ab.style.display = 'inline-flex';
-    // Reflect already-chosen advisor if exists
     var stored = null;
     try{ stored = JSON.parse(localStorage.getItem('selectedPlatformAdvisor')); }catch(e){}
     if(stored) {
@@ -47,6 +63,44 @@ function navShowUser(name) {
     }
   }
 }
+
+// ══ ACCOUNT MENU ══
+window.openAccountMenu = function(){
+  var modal = document.getElementById('accountMenuModal');
+  if(!modal) return;
+  // Populate user info
+  var saved = null;
+  try{ saved = JSON.parse(localStorage.getItem('authUser')||'{}'); }catch(e){}
+  var n = document.getElementById('menuUserName');
+  var e = document.getElementById('menuUserEmail');
+  if(n) n.textContent = saved && saved.name ? saved.name : '';
+  if(e) e.textContent = saved && saved.email ? saved.email : '';
+  modal.style.display = 'block';
+};
+window.closeAccountMenu = function(){
+  var modal = document.getElementById('accountMenuModal');
+  if(modal) modal.style.display = 'none';
+};
+
+// ══ RESET PROFILE ══
+window.resetProfile = function(){
+  if(!confirm('לאפס את הפרופיל האישי?\nהגדרות הפרופיל יימחקו אך הנתונים הפיננסיים יישארו.')) return;
+  localStorage.removeItem('userProfile');
+  localStorage.removeItem('onboardingProfileSkipped');
+  if(typeof showToast==='function') showToast('🔄 הפרופיל אופס');
+};
+
+// ══ DELETE ACCOUNT ══
+window.deleteAccount = function(){
+  if(!confirm('למחוק את החשבון לחלוטין?\n\nכל הנתונים, ההגדרות והתוצאות יימחקו סופית.\nלא ניתן לבטל פעולה זו.')) return;
+  if(!confirm('אישור סופי — מחק הכל?')) return;
+  // Clear all relevant localStorage keys
+  var keysToRemove = ['authUser','userProfile','_appSettings','termsAccepted',
+    'onboardingProfileSkipped','selectedPlatformAdvisor','advisorOnboardingDone',
+    '_advisors','termsContent','catOverrides'];
+  keysToRemove.forEach(function(k){ localStorage.removeItem(k); });
+  location.reload();
+};
 
 window.navGoHome = function() {
   // If not logged in → nothing to do (already on auth)
@@ -139,27 +193,27 @@ window.reopenFolderStep = function() {
   };
 
   window.authWithEmail = function(){
-    var nameRow = document.getElementById('authNameRow');
     var nameEl  = document.getElementById('authNameInput');
     var emailEl = document.getElementById('authEmailInput');
     var passEl  = document.getElementById('authPassInput');
     var name  = nameEl  ? nameEl.value.trim()  : '';
     var email = emailEl ? emailEl.value.trim() : '';
-    var pass  = passEl  ? passEl.value         : '';
+    var mode  = window._authMode || 'register';
 
-    // First click: show name row if hidden
-    if(nameRow && nameRow.style.display === 'none'){
-      nameRow.style.display = 'block';
-      if(nameEl) nameEl.focus();
-      return;
+    if(mode === 'login'){
+      // Login — just need email (password stored locally only)
+      if(!email){ alert('נא להזין כתובת מייל'); if(emailEl) emailEl.focus(); return; }
+      var savedName = email.split('@')[0];
+      // Try to get name from existing profile
+      try{ var p=JSON.parse(localStorage.getItem('userProfile')||'{}'); if(p.name) savedName=p.name; }catch(e){}
+      _completeAuth(savedName, email, 'email');
+    } else {
+      // Register — need name + email
+      if(!name && email){ name = email.split('@')[0]; }
+      if(!name){ alert('נא להזין שם מלא'); if(nameEl) nameEl.focus(); return; }
+      if(!email){ alert('נא להזין כתובת מייל'); if(emailEl) emailEl.focus(); return; }
+      _completeAuth(name, email, 'email');
     }
-    if(!name && email){ name = email.split('@')[0]; }
-    if(!name){
-      alert('\u05e0\u05d0 \u05dc\u05d4\u05d6\u05d9\u05df \u05e9\u05dd');
-      if(nameEl) nameEl.focus();
-      return;
-    }
-    _completeAuth(name, email, 'email');
   };
 
   function _completeAuth(name, email, provider){
@@ -462,14 +516,67 @@ function updatePasswordStrength(){
 function _refreshAuthBtn(){
   var btn = document.getElementById('authMainBtn');
   if(!btn) return;
-  var termsOk = localStorage.getItem('termsAccepted')==='1';
-  var pass = (document.getElementById('authPassInput')||{}).value||'';
-  // For social login, terms is enough. For email, also need pass>=8
-  var ok = termsOk;
+  var mode = window._authMode || 'register';
+  var ok;
+  if(mode === 'login'){
+    // Login: just need email
+    var email = (document.getElementById('authEmailInput')||{}).value||'';
+    ok = email.trim().length > 3;
+  } else {
+    // Register: need terms accepted
+    ok = localStorage.getItem('termsAccepted')==='1';
+  }
   btn.disabled = !ok;
   btn.style.opacity = ok ? '1' : '0.45';
   btn.style.cursor  = ok ? 'pointer' : 'not-allowed';
 }
+
+// ══ LOGIN / REGISTER MODE TOGGLE ══
+window._authMode = 'register';
+window.setAuthMode = function(mode){
+  window._authMode = mode;
+  var nameRow     = document.getElementById('authNameRow');
+  var termsRow    = document.getElementById('authTermsRow');
+  var passWrap    = document.getElementById('passStrengthWrap');
+  var title       = document.getElementById('authModeTitle');
+  var subtitle    = document.getElementById('authModeSubtitle');
+  var mainBtn     = document.getElementById('authMainBtn');
+  var switchText  = document.getElementById('authSwitchText');
+  var switchBtn   = document.getElementById('authSwitchBtn');
+  var googleTxt   = document.getElementById('googleBtnText');
+  var facebookTxt = document.getElementById('facebookBtnText');
+  var tabReg      = document.getElementById('tabRegister');
+  var tabLog      = document.getElementById('tabLogin');
+
+  if(mode === 'login'){
+    if(nameRow)    nameRow.style.display    = 'none';
+    if(termsRow)   termsRow.style.display   = 'none';
+    if(passWrap)   passWrap.style.display   = 'none';
+    if(title)      title.textContent        = 'כניסה לחשבון';
+    if(subtitle)   subtitle.textContent     = 'ברוך שובך! הזן מייל וסיסמה';
+    if(mainBtn)    mainBtn.textContent      = 'כניסה';
+    if(switchText) switchText.textContent   = 'עדיין אין לך חשבון?';
+    if(switchBtn)  { switchBtn.textContent  = 'הרשמה ←'; switchBtn.onclick = function(){ window.setAuthMode('register'); }; }
+    if(googleTxt)  googleTxt.textContent    = 'כניסה עם Google';
+    if(facebookTxt)facebookTxt.textContent  = 'כניסה עם Facebook';
+    // Tab styling
+    if(tabLog) { tabLog.style.background='#3b82f6'; tabLog.style.color='white'; }
+    if(tabReg) { tabReg.style.background='transparent'; tabReg.style.color='#64748b'; }
+  } else {
+    if(nameRow)    nameRow.style.display    = 'block';
+    if(termsRow)   termsRow.style.display   = 'flex';
+    if(title)      title.textContent        = 'יצירת חשבון חדש';
+    if(subtitle)   subtitle.textContent     = 'הצטרף בחינם ותתחיל לנתח את הכספים שלך';
+    if(mainBtn)    mainBtn.textContent      = 'הרשמה';
+    if(switchText) switchText.textContent   = 'כבר יש לך חשבון?';
+    if(switchBtn)  { switchBtn.textContent  = 'כניסה ←'; switchBtn.onclick = function(){ window.setAuthMode('login'); }; }
+    if(googleTxt)  googleTxt.textContent    = 'הרשמה עם Google';
+    if(facebookTxt)facebookTxt.textContent  = 'הרשמה עם Facebook';
+    if(tabReg) { tabReg.style.background='#3b82f6'; tabReg.style.color='white'; }
+    if(tabLog) { tabLog.style.background='transparent'; tabLog.style.color='#64748b'; }
+  }
+  _refreshAuthBtn();
+};
 
 function togglePassVisibility(){
   var inp = document.getElementById('authPassInput');
