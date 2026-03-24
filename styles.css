@@ -563,6 +563,24 @@ body{
   color: #475569; font-size: 0.78em; margin-top: 18px; line-height: 1.5;
 }
 .auth-privacy span { color: #22c55e; }
+
+/* ── AUTH RESPONSIVE ── */
+/* Tablet: narrow the form slightly */
+@media (max-width: 900px) {
+  .auth-form-panel { width: 360px !important; }
+}
+/* Mobile: hide hero, form goes full width */
+@media (max-width: 700px) {
+  .auth-hero-panel { display: none !important; }
+  .auth-form-panel {
+    width: 100% !important;
+    border-right: none !important;
+    flex-shrink: 1 !important;
+  }
+  #authScreen > div {
+    height: 100% !important;
+  }
+}
 /* OAuth sim overlay */
 .oauth-sim-card {
   background: #1e293b; border-radius: 14px; padding: 30px 28px;

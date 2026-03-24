@@ -78,62 +78,69 @@
   <div style="display:flex;width:100%;height:calc(100vh - 52px);align-items:stretch;direction:rtl;overflow:hidden;">
 
     <!-- ══ RIGHT SIDE: HERO ══ -->
-    <div style="flex:1;padding:48px 40px;display:flex;flex-direction:column;justify-content:center;background:linear-gradient(145deg,#020817 0%,#0f172a 50%,#1e3a5f 100%);min-width:0;">
-      <!-- Logo -->
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:40px;">
-        <span style="font-size:2.2em;">💰</span>
-        <span style="font-size:1.6em;font-weight:900;color:#60a5fa;letter-spacing:1px;">FinTrack</span>
-        <span style="background:#1d4ed8;color:#93c5fd;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:1px;">BETA</span>
-      </div>
+    <div class="auth-hero-panel" style="flex:1;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0f172a 0%,#1e293b 60%,#1e3a5f 100%);min-width:0;overflow:hidden;position:relative;">
+      <!-- decorative circles (background depth) -->
+      <div style="position:absolute;top:-80px;left:-80px;width:350px;height:350px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,0.08) 0%,transparent 70%);pointer-events:none;"></div>
+      <div style="position:absolute;bottom:-60px;right:60px;width:250px;height:250px;border-radius:50%;background:radial-gradient(circle,rgba(16,185,129,0.07) 0%,transparent 70%);pointer-events:none;"></div>
 
-      <!-- Headline -->
-      <h1 style="color:#f1f5f9;font-size:2em;font-weight:900;margin:0 0 16px;line-height:1.25;">
-        שלוט בכסף שלך —<br>
-        <span style="color:#60a5fa;">במקום שהוא ישלוט בך</span>
-      </h1>
-      <p style="color:#94a3b8;font-size:15px;line-height:1.7;margin:0 0 36px;max-width:380px;">
-        מערכת ניתוח פיננסי חכמה שמאחדת את כל חשבונות הבנק וכרטיסי האשראי שלך, ומספקת תמונה ברורה של המצב הכלכלי המשפחתי.
-      </p>
+      <!-- Content box — centered in hero -->
+      <div style="max-width:520px;width:100%;padding:48px 40px;">
+        <!-- Logo -->
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:36px;">
+          <span style="font-size:2.2em;">💰</span>
+          <span style="font-size:1.6em;font-weight:900;color:#60a5fa;letter-spacing:1px;">FinTrack</span>
+          <span style="background:#1d4ed8;color:#93c5fd;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:1px;">BETA</span>
+        </div>
 
-      <!-- Feature list -->
-      <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:40px;">
-        <div style="display:flex;align-items:center;gap:14px;">
-          <div style="width:36px;height:36px;border-radius:10px;background:rgba(59,130,246,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.1em;">📊</div>
-          <div><div style="color:#e2e8f0;font-weight:700;font-size:13px;">ניתוח אוטומטי מלא</div><div style="color:#64748b;font-size:11px;">PDF, Excel, CSV — כל הבנקים וכרטיסי האשראי</div></div>
-        </div>
-        <div style="display:flex;align-items:center;gap:14px;">
-          <div style="width:36px;height:36px;border-radius:10px;background:rgba(16,185,129,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.1em;">💡</div>
-          <div><div style="color:#e2e8f0;font-weight:700;font-size:13px;">תובנות ותזרים חודשי</div><div style="color:#64748b;font-size:11px;">המלצות חכמות, זיהוי חריגים, מעקב קטגוריות</div></div>
-        </div>
-        <div style="display:flex;align-items:center;gap:14px;">
-          <div style="width:36px;height:36px;border-radius:10px;background:rgba(139,92,246,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.1em;">🤝</div>
-          <div><div style="color:#e2e8f0;font-weight:700;font-size:13px;">מלווה פיננסי אישי</div><div style="color:#64748b;font-size:11px;">ייעוץ מותאם לך ולמשפחתך</div></div>
-        </div>
-        <div style="display:flex;align-items:center;gap:14px;">
-          <div style="width:36px;height:36px;border-radius:10px;background:rgba(245,158,11,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.1em;">🔒</div>
-          <div><div style="color:#e2e8f0;font-weight:700;font-size:13px;">פרטיות מלאה</div><div style="color:#64748b;font-size:11px;">הנתונים שלך נשארים אצלך — לא בשרת חיצוני</div></div>
-        </div>
-      </div>
+        <!-- Headline -->
+        <h1 style="color:#f1f5f9;font-size:1.9em;font-weight:900;margin:0 0 14px;line-height:1.25;">
+          שלוט בכסף שלך —<br>
+          <span style="color:#60a5fa;">במקום שהוא ישלוט בך</span>
+        </h1>
+        <p style="color:#94a3b8;font-size:14px;line-height:1.7;margin:0 0 30px;">
+          מערכת ניתוח פיננסי חכמה שמאחדת את כל חשבונות הבנק וכרטיסי האשראי שלך, ומספקת תמונה ברורה של המצב הכלכלי המשפחתי.
+        </p>
 
-      <!-- Testimonial / stats -->
-      <div style="display:flex;gap:24px;padding-top:24px;border-top:1px solid #1e3a5f;">
-        <div style="text-align:center;">
-          <div style="color:#60a5fa;font-size:1.4em;font-weight:900;">₪2,400</div>
-          <div style="color:#64748b;font-size:10px;">חיסכון ממוצע לחודש</div>
+        <!-- Feature list -->
+        <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:32px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:34px;height:34px;border-radius:9px;background:rgba(59,130,246,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1em;">📊</div>
+            <div><div style="color:#e2e8f0;font-weight:700;font-size:13px;">ניתוח אוטומטי מלא</div><div style="color:#64748b;font-size:11px;">PDF, Excel, CSV — כל הבנקים וכרטיסי האשראי</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:34px;height:34px;border-radius:9px;background:rgba(16,185,129,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1em;">💡</div>
+            <div><div style="color:#e2e8f0;font-weight:700;font-size:13px;">תובנות ותזרים חודשי</div><div style="color:#64748b;font-size:11px;">המלצות חכמות, זיהוי חריגים, מעקב קטגוריות</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:34px;height:34px;border-radius:9px;background:rgba(139,92,246,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1em;">🤝</div>
+            <div><div style="color:#e2e8f0;font-weight:700;font-size:13px;">מלווה פיננסי אישי</div><div style="color:#64748b;font-size:11px;">ייעוץ מותאם לך ולמשפחתך</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:34px;height:34px;border-radius:9px;background:rgba(245,158,11,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1em;">🔒</div>
+            <div><div style="color:#e2e8f0;font-weight:700;font-size:13px;">פרטיות מלאה</div><div style="color:#64748b;font-size:11px;">הנתונים שלך נשארים אצלך — לא בשרת חיצוני</div></div>
+          </div>
         </div>
-        <div style="text-align:center;">
-          <div style="color:#22c55e;font-size:1.4em;font-weight:900;">5 דק׳</div>
-          <div style="color:#64748b;font-size:10px;">עד לדשבורד מלא</div>
+
+        <!-- Stats -->
+        <div style="display:flex;gap:20px;padding-top:20px;border-top:1px solid rgba(59,130,246,0.2);">
+          <div style="text-align:center;">
+            <div style="color:#60a5fa;font-size:1.35em;font-weight:900;">₪2,400</div>
+            <div style="color:#475569;font-size:10px;">חיסכון ממוצע לחודש</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="color:#22c55e;font-size:1.35em;font-weight:900;">5 דק׳</div>
+            <div style="color:#475569;font-size:10px;">עד לדשבורד מלא</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="color:#f59e0b;font-size:1.35em;font-weight:900;">100%</div>
+            <div style="color:#475569;font-size:10px;">חינמי ופרטי</div>
+          </div>
         </div>
-        <div style="text-align:center;">
-          <div style="color:#f59e0b;font-size:1.4em;font-weight:900;">100%</div>
-          <div style="color:#64748b;font-size:10px;">חינמי ופרטי</div>
-        </div>
-      </div>
+      </div><!-- /content box -->
     </div>
 
     <!-- ══ LEFT SIDE: FORM ══ -->
-    <div style="width:420px;max-width:100vw;display:flex;flex-direction:column;justify-content:center;background:#0f172a;border-right:1px solid #1e3a5f;overflow-y:auto;">
+    <div class="auth-form-panel" style="width:420px;display:flex;flex-direction:column;justify-content:center;background:#0f172a;border-right:1px solid #1e3a5f;overflow-y:auto;flex-shrink:0;">
       <div style="padding:40px 36px;">
 
         <!-- ─── STEP 1: Email + Social ─── -->
@@ -1012,7 +1019,7 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeFlowG
 
 <!-- VERSION FOOTER -->
 <div id="versionFooter" style="position:fixed;bottom:8px;left:12px;z-index:99999;font-size:11px;color:#94a3b8;background:rgba(15,23,42,0.85);border:1px solid #1e3a5f;border-radius:6px;padding:3px 10px;font-family:monospace;pointer-events:none;backdrop-filter:blur(4px);">
-  FinTrack v1.6.0 · 2026-03-24
+  FinTrack v1.7.0 · 2026-03-24
 </div>
 
 </body>
