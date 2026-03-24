@@ -6,6 +6,8 @@
 <title>דשבורד פיננסי — ישי עוזרי</title>
 
 <link rel="stylesheet" href="styles.css">
+<!-- SheetJS (Excel reader/writer) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <!-- Chart.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
@@ -156,8 +158,8 @@ if(typeof Chart==='undefined'){
     <!-- ══════════════════════════════════════════
          CENTER: FORM (the CTA)
     ══════════════════════════════════════════ -->
-    <div class="auth-form-panel" style="width:380px;flex-shrink:0;display:flex;flex-direction:column;justify-content:center;background:#0c1524;border-right:1px solid #1e3a5f;border-left:1px solid #1e3a5f;overflow-y:auto;box-shadow:0 0 50px rgba(0,0,0,0.5);">
-      <div style="padding:36px 30px;">
+    <div class="auth-form-panel" style="width:400px;flex-shrink:0;display:flex;flex-direction:column;justify-content:center;background:#0c1524;border-right:1px solid #1e3a5f;border-left:1px solid #1e3a5f;overflow:hidden;box-shadow:0 0 50px rgba(0,0,0,0.5);">
+      <div style="padding:32px 28px;overflow-y:auto;max-height:100%;font-size:15px;">
 
         <!-- ─── STEP 1: Email + Social ─── -->
         <div id="authStep1">
@@ -383,8 +385,14 @@ if(typeof Chart==='undefined'){
 
     <div id="folderCurrentPath" style="display:none;" class="folder-path-badge"></div>
 
+    <!-- Hidden folder file input — triggered by triggerFolderPick() -->
+    <input type="file" id="folderFileInput" webkitdirectory multiple
+      accept=".xlsx,.xls,.csv"
+      style="display:none;"
+      onchange="if(typeof handleFolderPick==='function') handleFolderPick(this);">
+
     <button class="auth-main-btn" onclick="triggerFolderPick()"
-      style="background:#059669;margin-bottom:10px;width:100%;">📁 בחר תיקייה</button>
+      style="background:#059669;margin-bottom:10px;width:100%;">📁 בחר תיקייה לטעינה</button>
     <button onclick="skipFolderStep()"
       style="background:none;border:none;color:#64748b;cursor:pointer;font-size:0.9em;text-decoration:underline;width:100%;padding:4px;">
       דלג — אגדיר מאוחר יותר
@@ -464,9 +472,9 @@ if(typeof Chart==='undefined'){
         <div><div style="color:#e2e8f0;font-weight:700;font-size:13px;">דשבורד + תובנות</div><div style="color:#64748b;font-size:11px;">ניתוח מלא, גרפים, והמלצות אישיות</div></div>
       </div>
     </div>
-    <button onclick="if(typeof openSetupWizard==='function') openSetupWizard(); else if(typeof showFolderStepIfNeeded==='function') showFolderStepIfNeeded();"
-      style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:white;border:none;border-radius:12px;padding:14px 32px;font-size:15px;font-weight:700;cursor:pointer;width:100%;max-width:280px;">
-      📁 חבר קבצים עכשיו
+    <button onclick="showFolderStepIfNeeded();"
+      style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:white;border:none;border-radius:12px;padding:14px 32px;font-size:15px;font-weight:700;cursor:pointer;width:100%;max-width:300px;">
+      📂 העלאת קבצים פיננסיים
     </button>
   </div>
 </div>
@@ -525,9 +533,7 @@ if(typeof Chart==='undefined'){
     <span id="uib-folder-text" style="color:#f87171;">תיקייה לא הוגדרה</span>
     <button onclick="switchTab('management');setTimeout(()=>document.getElementById('settings-folder-path')?.focus(),200)" style="background:#334155;color:#93c5fd;border:none;border-radius:5px;padding:2px 8px;font-size:11px;cursor:pointer;">הגדר</button>
   </div>
-  <div style="margin-right:auto;display:flex;gap:8px;align-items:center;">
-    <button id="resetProfileBtn" onclick="resetProfileStep()" style="background:transparent;color:#f87171;border:1px solid #f87171;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;font-weight:600;">🔄 איפוס פרופיל</button>
-  </div>
+  <div style="margin-right:auto;display:flex;gap:8px;align-items:center;"></div>
 </div>
 
 <!-- income panel + savings bar removed -->
@@ -980,6 +986,7 @@ if(typeof Chart==='undefined'){
 <script src="app.js"></script>
 <script src="auth.js"></script>
 <script src="advisor.js"></script>
+<script src="fileParser.js"></script>
 
 <!-- ========== FLOW GUIDE MODAL ========== -->
 <div id="flowGuideModal" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;">

@@ -96,7 +96,7 @@ window.deleteAccount = function(){
   if(!confirm('אישור סופי — מחק הכל?')) return;
   // Clear all relevant localStorage keys
   var keysToRemove = ['authUser','userProfile','_appSettings','termsAccepted',
-    'onboardingProfileSkipped','selectedPlatformAdvisor','advisorOnboardingDone',
+    'onboardingProfileSkipped','onboardingFilesSkipped','selectedPlatformAdvisor','advisorOnboardingDone',
     '_advisors','termsContent','catOverrides'];
   keysToRemove.forEach(function(k){ localStorage.removeItem(k); });
   location.reload();
@@ -128,10 +128,13 @@ window.reopenFolderStep = function() {
   function _getFlowStatus(){
     var profile = null;
     try{ profile = JSON.parse(localStorage.getItem('userProfile')||'{}'); }catch(e){}
+    var filesSkipped = localStorage.getItem('onboardingFilesSkipped') === '1';
+    var hasFolder = !!(_appSettings && _appSettings.folderPath);
     return {
       profileDone:    !!(profile && profile.name && profile.name.length > 0),
       profileSkipped: localStorage.getItem('onboardingProfileSkipped') === '1',
-      hasFolder:      !!(_appSettings && _appSettings.folderPath)
+      hasFolder:      hasFolder || filesSkipped,
+      filesSkipped:   filesSkipped
     };
   }
   window._getFlowStatus = _getFlowStatus;
@@ -260,12 +263,12 @@ window.reopenFolderStep = function() {
     var authUser = { name: name, email: email, provider: provider, ts: Date.now() };
     localStorage.setItem('authUser', JSON.stringify(authUser));
 
-    // Sync to userProfile
+    // Sync to userProfile — use direct localStorage write to avoid
+    // triggering the saveProfile() wrapper that jumps to folder step
     if(!userProfile.name) userProfile.name = name;
     if(!userProfile.email && email) userProfile.email = email;
     try {
-      if(typeof saveProfile === 'function') saveProfile();
-      else localStorage.setItem('userProfile', JSON.stringify(userProfile));
+      localStorage.setItem('userProfile', JSON.stringify(userProfile));
     } catch(e){}
 
     updateHeaderUser();
@@ -301,27 +304,21 @@ window.reopenFolderStep = function() {
   };
 
   window.triggerFolderPick = function(){
-    // Try to call existing folder-pick function if it exists
-    if(typeof openSetupWizard === 'function'){
-      var ov = document.getElementById('folderStepOverlay');
-      if(ov) ov.style.display = 'none';
-      openSetupWizard();
-    } else if(typeof openSettings === 'function'){
-      var ov = document.getElementById('folderStepOverlay');
-      if(ov) ov.style.display = 'none';
-      openSettings();
-    } else {
-      alert('\u05e0\u05d0 \u05d1\u05d7\u05e8 \u05ea\u05d9\u05e7\u05d9\u05d9\u05d4 \u05d3\u05e8\u05da \u05d4\u05d2\u05d3\u05e8\u05d5\u05ea \u05d4\u05deע\u05e8\u05db\u05ea');
-    }
+    // Click the hidden file input that has webkitdirectory
+    var inp = document.getElementById('folderFileInput');
+    if(inp){ inp.value = ''; inp.click(); return; }
+    // Fallback: alert if input not found
+    alert('נא לרענן את הדף ולנסות שוב');
   };
 
   window.skipFolderStep = function(){
     var ov = document.getElementById('folderStepOverlay');
     if(ov) ov.style.display = 'none';
 
-    // Mark files as skipped in flow state
+    // Mark files as skipped in flow state (persisted so reload doesn't re-show overlay)
     window._flowState.filesSkipped = true;
     window._flowState.filesDone = false;
+    localStorage.setItem('onboardingFilesSkipped', '1');
 
     // Update navbar: files step skipped, move to dashboard per schema
     navSetStep('dashboard');
