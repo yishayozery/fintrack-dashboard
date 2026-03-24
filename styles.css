@@ -565,20 +565,18 @@ body{
 .auth-privacy span { color: #22c55e; }
 
 /* ── AUTH RESPONSIVE ── */
-/* Tablet: narrow the form slightly */
-@media (max-width: 900px) {
-  .auth-form-panel { width: 360px !important; }
+/* Tablet (< 1100px): hide process steps panel */
+@media (max-width: 1100px) {
+  .auth-steps-panel { display: none !important; }
 }
-/* Mobile: hide hero, form goes full width */
-@media (max-width: 700px) {
-  .auth-hero-panel { display: none !important; }
+/* Small tablet (< 800px): hide vision panel too */
+@media (max-width: 800px) {
+  .auth-vision-panel { display: none !important; }
   .auth-form-panel {
     width: 100% !important;
     border-right: none !important;
+    border-left: none !important;
     flex-shrink: 1 !important;
-  }
-  #authScreen > div {
-    height: 100% !important;
   }
 }
 /* OAuth sim overlay */

@@ -707,39 +707,30 @@ document.addEventListener('DOMContentLoaded', function(){
   if(localStorage.getItem('termsAccepted')==='1') toggleAuthBtn();
 });
 
-// Override authWithEmail with improved flow
-var _origEmailAuth = window.authWithEmail;
+// authWithEmail — uses 2-step flow (email from step 1 stored in window._authEmail)
+// Skips email verification (not configured) and goes straight to _completeAuth
 window.authWithEmail = function(){
-  var nameEl  = document.getElementById('authNameInput');
-  var emailEl = document.getElementById('authEmailInput');
-  var passEl  = document.getElementById('authPassInput');
-  var name    = nameEl  ? nameEl.value.trim()  : '';
-  var email   = emailEl ? emailEl.value.trim() : '';
-  var pass    = passEl  ? passEl.value         : '';
+  var nameEl = document.getElementById('authNameInput');
+  var name   = nameEl ? nameEl.value.trim() : '';
+  var email  = window._authEmail || (document.getElementById('authEmailInput')||{}).value || '';
+  var mode   = window._authMode || 'register';
 
-  if(!localStorage.getItem('termsAccepted')){
-    openTermsModal(); return;
+  email = email.trim();
+  if(!email){ alert('נא להזין כתובת מייל'); return; }
+
+  if(mode === 'login'){
+    // Login: retrieve stored name from profile if available
+    var savedName = email.split('@')[0];
+    try{ var p=JSON.parse(localStorage.getItem('userProfile')||'{}'); if(p.name) savedName=p.name; }catch(e){}
+    try{ var u=JSON.parse(localStorage.getItem('authUser')||'{}'); if(u.name) savedName=u.name; }catch(e){}
+    window._completeAuth(savedName, email, 'email');
+  } else {
+    // Register: need terms accepted
+    if(localStorage.getItem('termsAccepted') !== '1'){ openTermsModal(); return; }
+    if(!name && email){ name = email.split('@')[0]; }
+    if(!name){ if(nameEl) nameEl.focus(); alert('נא להזין שם מלא'); return; }
+    window._completeAuth(name, email, 'email');
   }
-  if(!name){
-    nameEl && nameEl.focus();
-    _authShake(nameEl);
-    _showAuthError('\u05E0\u05D0 \u05DC\u05D4\u05D6\u05D9\u05DF \u05E9\u05DD \u05DE\u05DC\u05D0');
-    return;
-  }
-  if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
-    emailEl && emailEl.focus();
-    _authShake(emailEl);
-    _showAuthError('\u05D0\u05E0\u05D0 \u05D4\u05D6\u05DF \u05DB\u05EA\u05D5\u05D1\u05EA \u05DE\u05D9\u05D9\u05DC \u05EA\u05E7\u05D9\u05E0\u05D4');
-    return;
-  }
-  if(pass.length < 8){
-    passEl && passEl.focus();
-    _authShake(passEl);
-    _showAuthError('\u05E1\u05D9\u05E1\u05DE\u05D0 \u05E6\u05E8\u05D9\u05DB\u05D4 \u05DC\u05D4\u05D9\u05D5\u05EA \u05DC\u05E4\u05D7\u05D5\u05EA 8 \u05EA\u05D5\u05D5\u05D9\u05DD');
-    return;
-  }
-  // Show verification step
-  _showEmailVerify(email, name, 'email');
 };
 
 function _showAuthError(msg){
