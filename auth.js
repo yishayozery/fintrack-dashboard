@@ -295,40 +295,48 @@ function checkTermsScroll(){
 function acceptTermsAndClose(){
   localStorage.setItem('termsAccepted','1');
   closeTermsModal();
-  var cb = document.getElementById('authTermsCheck');
-  if(cb){ cb.checked = true; toggleAuthBtn(); }
+  // Update visual checkbox (no real <input> — use localStorage as source of truth)
+  var vis = document.getElementById('authTermsCheckVisual');
+  if(vis){
+    vis.innerHTML = '<span style="color:#fff;font-size:13px;font-weight:900;line-height:1;">✓</span>';
+    vis.style.background = '#22c55e';
+    vis.style.borderColor = '#22c55e';
+  }
+  var badge = document.getElementById('termsReadBadge');
+  if(badge) badge.style.display = 'inline';
+  // Enable register button via localStorage-based refresh
+  _refreshAuthBtn();
 }
 function toggleAuthBtn(){
-  var cb = document.getElementById('authTermsCheck');
-  var btn = document.getElementById('authMainBtn');
-  var accepted = cb && cb.checked;
-  if(btn){
-    btn.disabled = !accepted;
-    btn.style.opacity = accepted ? '1' : '0.45';
-    btn.style.cursor = accepted ? 'pointer' : 'not-allowed';
-  }
+  // Use localStorage as source of truth (no real checkbox input in DOM)
+  _refreshAuthBtn();
 }
-// Gate Google/Facebook on terms too
+// Gate Google/Facebook on terms too (use localStorage as source of truth)
 (function(){
   var _origG = window.authWithGoogle;
   var _origF = window.authWithFacebook;
   window.authWithGoogle = function(){
-    var cb = document.getElementById('authTermsCheck');
-    if(!cb || !cb.checked){ openTermsModal(); return; }
+    if(localStorage.getItem('termsAccepted') !== '1'){ openTermsModal(); return; }
     if(typeof _origG === 'function') _origG();
   };
   window.authWithFacebook = function(){
-    var cb = document.getElementById('authTermsCheck');
-    if(!cb || !cb.checked){ openTermsModal(); return; }
+    if(localStorage.getItem('termsAccepted') !== '1'){ openTermsModal(); return; }
     if(typeof _origF === 'function') _origF();
   };
 })();
 
-// Auto-check on load if already accepted
+// Auto-restore visual checkbox state on load if already accepted
 document.addEventListener('DOMContentLoaded', function(){
   if(localStorage.getItem('termsAccepted')==='1'){
-    var cb = document.getElementById('authTermsCheck');
-    if(cb){ cb.checked=true; toggleAuthBtn(); }
+    var vis = document.getElementById('authTermsCheckVisual');
+    if(vis){
+      vis.innerHTML = '<span style="color:#fff;font-size:13px;font-weight:900;line-height:1;">✓</span>';
+      vis.style.background = '#22c55e';
+      vis.style.borderColor = '#22c55e';
+    }
+    var badge = document.getElementById('termsReadBadge');
+    if(badge) badge.style.display = 'inline';
+    _refreshAuthBtn();
   }
 });
 
@@ -892,12 +900,137 @@ function _removeAdvisor(i){
   renderAdvisorSection();
 }
 
-// Hook renderAdvisorSection into renderManagementTab
+// Hook renderAdvisorSection + platform advisor banner into renderManagementTab
 ;(function(){
   var _origMgmt = window.renderManagementTab;
   window.renderManagementTab = function(){
     if(typeof _origMgmt==='function') _origMgmt();
-    setTimeout(renderAdvisorSection, 50);
+    setTimeout(function(){
+      renderAdvisorSection();
+      renderSelectedAdvisorBanner();
+    }, 50);
   };
 })();
 
+
+
+// ══════════════════════════════════════════════════════════════
+// ONBOARDING ADVISOR SELECTION  (step 3 — after profile)
+// ══════════════════════════════════════════════════════════════
+var PLATFORM_ADVISORS = [
+  { id:'pa1', emoji:'👩‍💼', name:'רונית כהן', specialty:'תכנון תקציב משפחתי', desc:'מומחית לניהול הוצאות, חיסכון וגיבוש תוכנית כלכלית לכל המשפחה.', rating:4.9, clients:143, badge:'⭐ מומלץ' },
+  { id:'pa2', emoji:'👨‍💼', name:'יוסי לוי', specialty:'חיסכון והשקעות', desc:'מתמחה בהשקעות לטווח ארוך ותכנון פרישה עם דגש על ביטחון כלכלי.', rating:4.7, clients:98, badge:'' },
+  { id:'pa3', emoji:'👩‍🏫', name:'מיכל אבוחצירא', specialty:'יציאה מחובות', desc:'עוזרת למשפחות לצאת מחובות ולבנות עתיד כלכלי יציב ובריא.', rating:4.8, clients:112, badge:'🔥 פופולרי' },
+  { id:'pa4', emoji:'🧑‍💻', name:'דוד שפירא', specialty:'ייעוץ דיגיטלי', desc:'שילוב של AI ויועץ אנושי — כלים חכמים עם ליווי אישי צמוד.', rating:4.6, clients:76, badge:'' }
+];
+
+function openAdvisorSelection(){
+  // Skip if advisor already chosen in this session
+  if(localStorage.getItem('selectedPlatformAdvisor') && localStorage.getItem('advisorOnboardingDone')==='1'){
+    showFolderStepIfNeeded();
+    return;
+  }
+  var grid = document.getElementById('advisorCardsGrid');
+  var ov = document.getElementById('advisorSelectionOverlay');
+  if(!ov) { showFolderStepIfNeeded(); return; }
+  if(grid) grid.innerHTML = PLATFORM_ADVISORS.map(function(a){
+    return '<div onclick="selectAdvisor(\''+a.id+'\')" style="background:#1e293b;border:2px solid #1e3a5f;border-radius:14px;padding:16px;cursor:pointer;transition:border-color .2s;position:relative;" onmouseover="this.style.borderColor=\'#3b82f6\'" onmouseout="this.style.borderColor=\'#1e3a5f\'">'
+      +(a.badge ? '<div style="position:absolute;top:10px;left:10px;background:#1d4ed8;color:#93c5fd;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;">'+a.badge+'</div>' : '')
+      +'<div style="font-size:2.2em;margin-bottom:8px;">'+a.emoji+'</div>'
+      +'<div style="font-weight:700;color:#f1f5f9;font-size:14px;margin-bottom:2px;">'+a.name+'</div>'
+      +'<div style="color:#60a5fa;font-size:11px;font-weight:600;margin-bottom:8px;">'+a.specialty+'</div>'
+      +'<div style="color:#94a3b8;font-size:12px;line-height:1.45;margin-bottom:10px;">'+a.desc+'</div>'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;">'
+      +'<span style="color:#fbbf24;font-size:12px;">★ '+a.rating+'</span>'
+      +'<span style="color:#64748b;font-size:11px;">'+a.clients+' לקוחות</span>'
+      +'</div>'
+      +'</div>';
+  }).join('');
+  ov.style.display = 'flex';
+}
+
+window.selectAdvisor = function(id){
+  var a = PLATFORM_ADVISORS.find(function(x){ return x.id===id; });
+  if(!a) return;
+  localStorage.setItem('selectedPlatformAdvisor', JSON.stringify(a));
+  localStorage.setItem('advisorOnboardingDone','1');
+  var ov = document.getElementById('advisorSelectionOverlay');
+  if(ov) ov.style.display = 'none';
+  if(typeof showToast==='function') showToast('🤝 '+a.name+' נבחר כמלווה שלך!');
+  showFolderStepIfNeeded();
+  // Render in management tab if visible
+  renderSelectedAdvisorBanner();
+};
+
+window.skipAdvisorSelection = function(){
+  localStorage.setItem('advisorOnboardingDone','1');
+  var ov = document.getElementById('advisorSelectionOverlay');
+  if(ov) ov.style.display = 'none';
+  showFolderStepIfNeeded();
+};
+
+function renderSelectedAdvisorBanner(){
+  var el = document.getElementById('advisorSection');
+  if(!el) return;
+  var stored = null;
+  try{ stored = JSON.parse(localStorage.getItem('selectedPlatformAdvisor')); }catch(e){}
+  if(!stored) return;
+  // Prepend a banner showing the selected platform advisor
+  var banner = '<div id="platformAdvisorBanner" style="background:linear-gradient(135deg,#1e3a5f,#1d4ed8);border-radius:14px;padding:18px 20px;margin-bottom:12px;display:flex;align-items:center;gap:16px;position:relative;">'
+    +'<div style="font-size:2.5em;">'+stored.emoji+'</div>'
+    +'<div style="flex:1;">'
+    +'<div style="font-size:11px;color:#93c5fd;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px;">המלווה הפיננסי שלך</div>'
+    +'<div style="font-weight:700;color:#f1f5f9;font-size:16px;">'+stored.name+'</div>'
+    +'<div style="color:#93c5fd;font-size:12px;">'+stored.specialty+' · ★ '+stored.rating+'</div>'
+    +'</div>'
+    +'<button onclick="openAdvisorSelectionChange()" style="background:rgba(255,255,255,0.1);color:#e0f2fe;border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;">החלף</button>'
+    +'</div>';
+  var existing = document.getElementById('platformAdvisorBanner');
+  if(existing) existing.outerHTML = banner;
+  else el.insertAdjacentHTML('afterbegin', banner);
+}
+
+window.openAdvisorSelectionChange = function(){
+  localStorage.removeItem('advisorOnboardingDone');
+  openAdvisorSelection();
+};
+
+// Hook into onboarding: show advisor selection after profile step
+;(function(){
+  var _origSkipProfile = window.skipOnboardingProfile || skipOnboardingProfile;
+  // We patch skipOnboardingProfile to route through advisor selection
+  var _orig = skipOnboardingProfile;
+  skipOnboardingProfile = function(){
+    hideOnboardingProfile();
+    localStorage.setItem('onboardingProfileSkipped','1');
+    window._flowState.profileSkipped = true;
+    navSetStep('files');
+    setTimeout(openAdvisorSelection, 300);
+  };
+
+  // Also patch goToProfileFromOnboarding's folder redirect
+  var _origGoTo = goToProfileFromOnboarding;
+  goToProfileFromOnboarding = function(){
+    hideOnboardingProfile();
+    window._flowState.profileDone = true;
+    window._flowState.profileSkipped = false;
+    navSetStep('files');
+    setTimeout(function(){
+      if(typeof openProfileModal==='function') openProfileModal();
+    }, 150);
+    // After profile, show advisor selection (not folder directly)
+    setTimeout(openAdvisorSelection, 600);
+  };
+})();
+
+// Render advisor banner when management tab is rendered
+;(function(){
+  var _origRender = window.renderAdvisorSection || renderAdvisorSection;
+  var _prev = typeof renderAdvisorSection === 'function' ? renderAdvisorSection : null;
+  var _newRender = function(){
+    if(_prev) _prev();
+    renderSelectedAdvisorBanner();
+  };
+  // Override via global
+  window._renderAdvisorSectionFull = _newRender;
+})();
