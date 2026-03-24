@@ -601,3 +601,61 @@ body{
   margin-bottom: 18px; word-break: break-all; text-align: right;
 }
 
+
+/* ═══════════════════════════════════════
+   ADVISOR PORTAL STYLES
+═══════════════════════════════════════ */
+.adv-filter {
+  background: #0f172a; border: 1px solid #1e3a5f; color: #64748b;
+  cursor: pointer; font-size: 11px; font-family: inherit;
+  padding: 5px 12px; border-radius: 8px; transition: all .2s;
+}
+.adv-filter.active, .adv-filter:hover {
+  background: rgba(59,130,246,.15); border-color: #3b82f6; color: #93c5fd;
+}
+.adv-client-card {
+  background: #0f172a; border: 1px solid #1e3a5f; border-radius: 12px;
+  padding: 13px 14px; cursor: pointer; transition: all .2s;
+  margin-bottom: 8px; display: flex; align-items: center; gap: 11px;
+}
+.adv-client-card:hover, .adv-client-card.selected {
+  background: rgba(59,130,246,.08); border-color: #3b82f6;
+}
+.adv-client-avatar {
+  width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 800; color: white;
+}
+.adv-health-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.adv-stat-card {
+  background: #0f172a; border: 1px solid #1e3a5f; border-radius: 12px;
+  padding: 16px 18px; text-align: center;
+}
+.adv-stat-card .val { font-size: 1.6em; font-weight: 800; margin-bottom: 4px; }
+.adv-stat-card .lbl { color: #64748b; font-size: 11px; }
+.adv-insight-row {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 0; border-bottom: 1px solid #1e2d3d;
+  font-size: 13px; color: #cbd5e1; line-height: 1.5;
+}
+.adv-insight-row:last-child { border-bottom: none; }
+.adv-urgent-item {
+  background: rgba(245,158,11,.08); border: 1px solid rgba(245,158,11,.2);
+  border-radius: 10px; padding: 11px 14px; margin-bottom: 8px;
+  display: flex; align-items: center; gap: 10px; font-size: 13px;
+}
+.adv-meeting-row {
+  display: flex; align-items: center; gap: 10px; padding: 9px 0;
+  border-bottom: 1px solid #1e2d3d; font-size: 13px; color: #94a3b8;
+}
+.adv-meeting-row:last-child { border-bottom: none; }
+.sched-slot {
+  background: #1e293b; border: 1px solid #334155; color: #94a3b8;
+  cursor: pointer; font-size: 12px; font-family: inherit;
+  padding: 6px 14px; border-radius: 8px; transition: all .2s;
+}
+.sched-slot.active {
+  background: rgba(59,130,246,.2); border-color: #3b82f6; color: #93c5fd;
+}

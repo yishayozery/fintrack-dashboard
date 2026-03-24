@@ -1663,6 +1663,8 @@ function renderAll(){
   if(document.getElementById('tab-insurance')?.classList.contains('active')) renderInsuranceTab();
   if(document.getElementById('tab-management')?.classList.contains('active')) renderManagementTab();
   if(document.getElementById('tab-statement')?.classList.contains('active')) renderStatementTab();
+  // Virtual advisor — runs after all data is processed
+  if(typeof window.initVirtualAdvisor === 'function') window.initVirtualAdvisor(data);
 }
 
 

@@ -8,7 +8,15 @@
 <link rel="stylesheet" href="styles.css">
 <!-- Chart.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-</head>
+<script>
+/* Fallback shim if Chart.js CDN fails to load */
+if(typeof Chart==='undefined'){
+  window.Chart=function(el,cfg){this._el=el;this.data=(cfg&&cfg.data)||{datasets:[]};this.options=(cfg&&cfg.options)||{};};
+  window.Chart.prototype.destroy=function(){};
+  window.Chart.prototype.update=function(){};
+  console.warn('FinTrack: Chart.js CDN unavailable — charts disabled');
+}
+</script>
 <body>
 
 <!-- ========== GLOBAL STICKY NAVBAR ========== -->
@@ -222,6 +230,13 @@
           <p class="auth-privacy" style="margin-top:8px;font-size:11px;">
             <span>🔒</span> הנתונים שלך מוצפנים ומאובטחים.
           </p>
+        </div>
+
+        <!-- ─── ADVISOR LINK ─── -->
+        <div style="border-top:1px solid #1e2d45;margin:6px 30px 0;padding:14px 0 18px;text-align:center;">
+          <button onclick="openAdvisorPortal()" style="background:none;border:1px solid #1e3a5f;color:#64748b;cursor:pointer;font-size:12px;font-family:inherit;padding:7px 16px;border-radius:8px;transition:all .2s;" onmouseover="this.style.borderColor='#3b82f6';this.style.color='#93c5fd'" onmouseout="this.style.borderColor='#1e3a5f';this.style.color='#64748b'">
+            💼 כניסה כיועץ כלכלי
+          </button>
         </div>
 
       </div>
@@ -634,6 +649,8 @@
 
   <!-- ══════════ OVERVIEW ══════════ -->
   <div id="tab-overview" class="tab-content">
+    <!-- Virtual Advisor Panel — populated by advisor.js initVirtualAdvisor() -->
+    <div id="virtualAdvisorPanel" style="display:none;margin-bottom:18px;"></div>
     <div id="benchmarkAlertsPanel"></div>
     <div class="kpi-grid" id="kpiGrid"></div>
     <div class="grid-2">
@@ -962,6 +979,7 @@
 <script src="data.js"></script>
 <script src="app.js"></script>
 <script src="auth.js"></script>
+<script src="advisor.js"></script>
 
 <!-- ========== FLOW GUIDE MODAL ========== -->
 <div id="flowGuideModal" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;">
@@ -1080,9 +1098,220 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeFlowG
   </div>
 </div>
 
+<!-- ============================================================
+     ADVISOR PORTAL SCREEN
+     Shown when advisor clicks "כניסה כיועץ כלכלי"
+     Completely separate from user onboarding flow
+============================================================ -->
+<div id="advisorPortal" style="display:none;position:fixed;inset:0;background:#0b1628;z-index:8888;direction:rtl;font-family:'Segoe UI',system-ui,sans-serif;overflow:hidden;">
+
+  <!-- ADVISOR NAV -->
+  <nav style="position:fixed;top:0;right:0;left:0;height:52px;background:linear-gradient(90deg,#0f172a,#1a2744);border-bottom:2px solid #22356b;display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:100;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span style="font-size:22px;">💼</span>
+      <span style="color:#f1f5f9;font-weight:800;font-size:15px;">FinTrack <span style="color:#3b82f6;">יועץ</span></span>
+      <span style="background:#22356b;color:#93c5fd;font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;letter-spacing:1px;">BETA</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span id="advisorName" style="color:#94a3b8;font-size:13px;"></span>
+      <button onclick="closeAdvisorPortal()" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#f87171;cursor:pointer;font-size:12px;font-family:inherit;padding:5px 14px;border-radius:8px;">יציאה</button>
+    </div>
+  </nav>
+
+  <!-- ADVISOR BODY -->
+  <div style="display:flex;height:100vh;padding-top:52px;">
+
+    <!-- SIDEBAR: Client List -->
+    <div id="advisorSidebar" style="width:300px;flex-shrink:0;background:#0c1524;border-left:1px solid #1e3a5f;overflow-y:auto;padding:16px 12px;">
+      <div style="padding:8px 4px 14px;">
+        <div style="color:#64748b;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">הלקוחות שלי</div>
+        <div style="color:#f1f5f9;font-size:16px;font-weight:700;" id="advisorClientCount">0 לקוחות פעילים</div>
+      </div>
+
+      <!-- Filters -->
+      <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;">
+        <button class="adv-filter active" data-filter="all" onclick="advisorFilter(this,'all')">הכל</button>
+        <button class="adv-filter" data-filter="urgent" onclick="advisorFilter(this,'urgent')">⚡ דחוף</button>
+        <button class="adv-filter" data-filter="pending" onclick="advisorFilter(this,'pending')">⏳ ממתין</button>
+      </div>
+
+      <div id="advisorClientList"></div>
+
+      <!-- Add Demo Client -->
+      <button onclick="advisorAddDemoClient()" style="width:100%;margin-top:12px;background:rgba(59,130,246,.08);border:1px dashed #1e3a5f;color:#3b82f6;cursor:pointer;font-size:12px;font-family:inherit;padding:9px;border-radius:10px;transition:.2s;" onmouseover="this.style.background='rgba(59,130,246,.15)'" onmouseout="this.style.background='rgba(59,130,246,.08)'">
+        + הוסף לקוח דמו
+      </button>
+    </div>
+
+    <!-- MAIN: Selected Client or Welcome -->
+    <div id="advisorMain" style="flex:1;overflow-y:auto;padding:24px 28px;">
+      <div id="advisorWelcome">
+        <div style="max-width:540px;margin:60px auto;text-align:center;">
+          <div style="font-size:56px;margin-bottom:16px;">💼</div>
+          <h2 style="color:#f1f5f9;font-size:1.6em;font-weight:800;margin:0 0 10px;">ברוך הבא לפורטל היועצים</h2>
+          <p style="color:#475569;font-size:14px;line-height:1.7;margin:0 0 28px;">כאן תוכל לנהל את כל הלקוחות שלך, לראות את המצב הפיננסי שלהם, לתזמן שיחות ולשלוח הנחיות ישירות.</p>
+          <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+            <div style="background:#0f172a;border:1px solid #1e3a5f;border-radius:12px;padding:18px 22px;text-align:center;min-width:120px;">
+              <div id="advStatClients" style="font-size:2em;font-weight:800;color:#3b82f6;">0</div>
+              <div style="color:#64748b;font-size:12px;margin-top:4px;">לקוחות</div>
+            </div>
+            <div style="background:#0f172a;border:1px solid #1e3a5f;border-radius:12px;padding:18px 22px;text-align:center;min-width:120px;">
+              <div id="advStatUrgent" style="font-size:2em;font-weight:800;color:#f59e0b;">0</div>
+              <div style="color:#64748b;font-size:12px;margin-top:4px;">דחופים</div>
+            </div>
+            <div style="background:#0f172a;border:1px solid #1e3a5f;border-radius:12px;padding:18px 22px;text-align:center;min-width:120px;">
+              <div id="advStatMeetings" style="font-size:2em;font-weight:800;color:#22c55e;">0</div>
+              <div style="color:#64748b;font-size:12px;margin-top:4px;">פגישות השבוע</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Client Detail View (hidden by default) -->
+      <div id="advisorClientDetail" style="display:none;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;">
+          <div style="display:flex;align-items:center;gap:14px;">
+            <div id="advClientAvatar" style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#6366f1);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:white;"></div>
+            <div>
+              <h2 id="advClientName" style="color:#f1f5f9;font-size:1.3em;font-weight:800;margin:0 0 2px;"></h2>
+              <span id="advClientEmail" style="color:#475569;font-size:12px;"></span>
+            </div>
+          </div>
+          <!-- Action Buttons -->
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button id="advWaBtn" onclick="advisorOpenWhatsApp()" style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:#22c55e;cursor:pointer;font-size:12px;font-family:inherit;padding:7px 14px;border-radius:9px;display:flex;align-items:center;gap:6px;transition:.2s;" onmouseover="this.style.background='rgba(34,197,94,.2)'" onmouseout="this.style.background='rgba(34,197,94,.1)'">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              WhatsApp
+            </button>
+            <button onclick="advisorOpenSchedule()" style="background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.3);color:#818cf8;cursor:pointer;font-size:12px;font-family:inherit;padding:7px 14px;border-radius:9px;display:flex;align-items:center;gap:6px;transition:.2s;" onmouseover="this.style.background='rgba(99,102,241,.2)'" onmouseout="this.style.background='rgba(99,102,241,.1)'">
+              📅 תזמן שיחה
+            </button>
+            <button onclick="advisorSendNote()" style="background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);color:#fbbf24;cursor:pointer;font-size:12px;font-family:inherit;padding:7px 14px;border-radius:9px;display:flex;align-items:center;gap:6px;transition:.2s;" onmouseover="this.style.background='rgba(251,191,36,.2)'" onmouseout="this.style.background='rgba(251,191,36,.1)'">
+              📝 שלח הנחיה
+            </button>
+          </div>
+        </div>
+
+        <!-- Client Summary Cards -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:22px;" id="advClientCards"></div>
+
+        <!-- Urgent Actions -->
+        <div id="advUrgentSection" style="background:#0f172a;border:1px solid #f59e0b44;border-radius:14px;padding:16px 18px;margin-bottom:18px;display:none;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+            <span style="font-size:16px;">⚡</span>
+            <span style="color:#fbbf24;font-weight:700;font-size:14px;">פעולות דחופות</span>
+          </div>
+          <div id="advUrgentList"></div>
+        </div>
+
+        <!-- Insights -->
+        <div style="background:#0f172a;border:1px solid #1e3a5f;border-radius:14px;padding:16px 18px;margin-bottom:18px;">
+          <div style="color:#94a3b8;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;">תובנות חודש אחרון</div>
+          <div id="advClientInsights"></div>
+        </div>
+
+        <!-- Meeting History -->
+        <div style="background:#0f172a;border:1px solid #1e3a5f;border-radius:14px;padding:16px 18px;">
+          <div style="color:#94a3b8;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;">היסטוריית פגישות</div>
+          <div id="advMeetingHistory"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     ADVISOR: Schedule Meeting Modal
+============================================================ -->
+<div id="advisorScheduleModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:none;align-items:center;justify-content:center;direction:rtl;">
+  <div style="background:#0f172a;border:1px solid #1e3a5f;border-radius:18px;padding:28px;width:420px;max-width:95vw;max-height:90vh;overflow-y:auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <h3 style="color:#f1f5f9;font-size:1.1em;font-weight:800;margin:0;">📅 תזמון שיחה</h3>
+      <button onclick="closeScheduleModal()" style="background:none;border:none;color:#475569;cursor:pointer;font-size:20px;line-height:1;padding:0;">×</button>
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <label style="color:#94a3b8;font-size:12px;font-weight:600;display:block;margin-bottom:6px;">לקוח</label>
+      <div id="schedClientName" style="background:#1e293b;border:1px solid #334155;border-radius:10px;padding:10px 14px;color:#f1f5f9;font-weight:600;font-size:14px;"></div>
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <label style="color:#94a3b8;font-size:12px;font-weight:600;display:block;margin-bottom:6px;">תאריך</label>
+      <input id="schedDate" type="date" style="width:100%;background:#1e293b;border:1px solid #334155;border-radius:10px;padding:10px 14px;color:#f1f5f9;font-size:14px;font-family:inherit;box-sizing:border-box;direction:ltr;" />
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <label style="color:#94a3b8;font-size:12px;font-weight:600;display:block;margin-bottom:8px;">שעה</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;" id="schedTimeSlots">
+        <button class="sched-slot" onclick="selectTimeSlot(this,'09:00')">09:00</button>
+        <button class="sched-slot" onclick="selectTimeSlot(this,'10:00')">10:00</button>
+        <button class="sched-slot" onclick="selectTimeSlot(this,'11:00')">11:00</button>
+        <button class="sched-slot" onclick="selectTimeSlot(this,'12:00')">12:00</button>
+        <button class="sched-slot" onclick="selectTimeSlot(this,'14:00')">14:00</button>
+        <button class="sched-slot" onclick="selectTimeSlot(this,'15:00')">15:00</button>
+        <button class="sched-slot" onclick="selectTimeSlot(this,'16:00')">16:00</button>
+        <button class="sched-slot" onclick="selectTimeSlot(this,'17:00')">17:00</button>
+      </div>
+    </div>
+
+    <div style="margin-bottom:18px;">
+      <label style="color:#94a3b8;font-size:12px;font-weight:600;display:block;margin-bottom:6px;">נושא / הערות</label>
+      <textarea id="schedNotes" rows="3" placeholder="למשל: סקירה חודשית, בדיקת תוצאות..." style="width:100%;background:#1e293b;border:1px solid #334155;border-radius:10px;padding:10px 14px;color:#f1f5f9;font-size:13px;font-family:inherit;resize:none;box-sizing:border-box;"></textarea>
+    </div>
+
+    <div style="display:flex;gap:10px;">
+      <button onclick="confirmSchedule()" style="flex:1;background:linear-gradient(135deg,#3b82f6,#6366f1);border:none;color:white;font-size:14px;font-weight:700;font-family:inherit;padding:12px;border-radius:12px;cursor:pointer;">אשר פגישה</button>
+      <button onclick="closeScheduleModal()" style="background:#1e293b;border:1px solid #334155;color:#94a3b8;font-size:13px;font-family:inherit;padding:12px 18px;border-radius:12px;cursor:pointer;">ביטול</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     ADVISOR: Send Note Modal
+============================================================ -->
+<div id="advisorNoteModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;align-items:center;justify-content:center;direction:rtl;">
+  <div style="background:#0f172a;border:1px solid #1e3a5f;border-radius:18px;padding:28px;width:420px;max-width:95vw;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <h3 style="color:#f1f5f9;font-size:1.1em;font-weight:800;margin:0;">📝 שלח הנחיה ללקוח</h3>
+      <button onclick="closeNoteModal()" style="background:none;border:none;color:#475569;cursor:pointer;font-size:20px;line-height:1;padding:0;">×</button>
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <label style="color:#94a3b8;font-size:12px;font-weight:600;display:block;margin-bottom:6px;">לקוח</label>
+      <div id="noteClientName" style="background:#1e293b;border:1px solid #334155;border-radius:10px;padding:10px 14px;color:#f1f5f9;font-weight:600;font-size:14px;"></div>
+    </div>
+
+    <!-- Quick templates -->
+    <div style="margin-bottom:12px;">
+      <label style="color:#94a3b8;font-size:12px;font-weight:600;display:block;margin-bottom:8px;">תבנית מהירה</label>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        <button onclick="selectNoteTemplate(this)" data-tmpl="ראיתי שיש לך עמלות כרטיס אשראי גבוהות — ממליץ להתקשר לחברת האשראי ולבקש ביטול." style="background:#0f172a;border:1px solid #1e3a5f;color:#94a3b8;cursor:pointer;font-size:11px;font-family:inherit;padding:5px 10px;border-radius:7px;text-align:right;">💳 עמלות אשראי</button>
+        <button onclick="selectNoteTemplate(this)" data-tmpl="יש לך כפלים בביטוח — ממליץ לסרוק את הפוליסות ולשלוח לי לבדיקה." style="background:#0f172a;border:1px solid #1e3a5f;color:#94a3b8;cursor:pointer;font-size:11px;font-family:inherit;padding:5px 10px;border-radius:7px;text-align:right;">🛡️ ביטוח</button>
+        <button onclick="selectNoteTemplate(this)" data-tmpl="ראיתי שההוצאות עלו ב-15% החודש — בוא נסקור יחד בפגישה הבאה." style="background:#0f172a;border:1px solid #1e3a5f;color:#94a3b8;cursor:pointer;font-size:11px;font-family:inherit;padding:5px 10px;border-radius:7px;text-align:right;">📊 הוצאות</button>
+        <button onclick="selectNoteTemplate(this)" data-tmpl="לא קיבלתי ממך דפי חשבון לחודש שעבר — תוכל לשלוח?" style="background:#0f172a;border:1px solid #1e3a5f;color:#94a3b8;cursor:pointer;font-size:11px;font-family:inherit;padding:5px 10px;border-radius:7px;text-align:right;">📂 קבצים חסרים</button>
+        <button onclick="selectNoteTemplate(this)" data-tmpl="תלוש השכר החסר מחודש שעבר — אנא שלח כדי שנוכל לעדכן את הניתוח." style="background:#0f172a;border:1px solid #1e3a5f;color:#94a3b8;cursor:pointer;font-size:11px;font-family:inherit;padding:5px 10px;border-radius:7px;text-align:right;">💼 תלוש שכר</button>
+      </div>
+    </div>
+
+    <div style="margin-bottom:18px;">
+      <label style="color:#94a3b8;font-size:12px;font-weight:600;display:block;margin-bottom:6px;">הודעה</label>
+      <textarea id="noteText" rows="4" placeholder="כתוב הנחיה ללקוח..." style="width:100%;background:#1e293b;border:1px solid #334155;border-radius:10px;padding:10px 14px;color:#f1f5f9;font-size:13px;font-family:inherit;resize:none;box-sizing:border-box;"></textarea>
+    </div>
+
+    <div style="display:flex;gap:10px;">
+      <button onclick="sendNoteViaApp()" style="flex:1;background:linear-gradient(135deg,#3b82f6,#6366f1);border:none;color:white;font-size:14px;font-weight:700;font-family:inherit;padding:12px;border-radius:12px;cursor:pointer;">שלח במערכת</button>
+      <button onclick="sendNoteViaWhatsApp()" style="background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.4);color:#22c55e;font-size:13px;font-family:inherit;padding:12px 14px;border-radius:12px;cursor:pointer;display:flex;align-items:center;gap:6px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        WhatsApp
+      </button>
+      <button onclick="closeNoteModal()" style="background:#1e293b;border:1px solid #334155;color:#94a3b8;font-size:13px;font-family:inherit;padding:12px 18px;border-radius:12px;cursor:pointer;">ביטול</button>
+    </div>
+  </div>
+</div>
+
 <!-- VERSION FOOTER -->
 <div id="versionFooter" style="position:fixed;bottom:8px;left:12px;z-index:99999;font-size:11px;color:#94a3b8;background:rgba(15,23,42,0.85);border:1px solid #1e3a5f;border-radius:6px;padding:3px 10px;font-family:monospace;pointer-events:none;backdrop-filter:blur(4px);">
-  FinTrack v1.8.0 · 2026-03-24
+  FinTrack v1.9.0 · 2026-03-24 · Advisor Portal
 </div>
 
 </body>
