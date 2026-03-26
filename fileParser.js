@@ -1,79 +1,93 @@
 /**
- * FinTrack File Parser
- * Reads Excel/XLS/CSV bank & credit card files and populates TRANSACTIONS.
+ * FinTrack File Parser  v1.11.0
+ * Reads Excel/XLS/CSV bank & credit card files → populates TRANSACTIONS.
  *
- * Supported formats:
- *  1. MaxCard (Leumi CC)  — header at row 10: תאריך רכישה | שם בית עסק | סכום עסקה ...
- *  2. Leumi CC export     — header at row 4:  תאריך עסקה | שם בית העסק | קטגוריה | 4 ספרות ...
- *  3. Diners/Mastercard   — header at row 4:  תאריך עסקה | שם בית עסק | סכום עסקה | סכום חיוב ...
- *  4. Fibi bank statement — various formats, detect by columns
- *
- * v1.10.0 · 2026-03-24
+ * Supported:
+ *  1. MaxCard / Isracard  — header: תאריך רכישה | שם בית עסק | סכום עסקה | סכום חיוב
+ *  2. Leumi CC export     — header: תאריך עסקה | שם בית העסק | קטגוריה | 4 ספרות
+ *  3. Diners / Max CC     — header: תאריך עסקה | שם בית עסק | סכום חיוב | סוג עסקה  (cells may have \n)
+ *  4. Bank statement      — header: תאריך | תיאור | חובה / זכות / יתרה
  */
 
 (function(){
 'use strict';
 
 /* ══════════════════════════════════════════════
-   PUBLIC: handleFolderPick — replaces original
+   PUBLIC: handleFolderPick
 ══════════════════════════════════════════════ */
 window.handleFolderPick = function(input){
   if(!input.files || input.files.length === 0) return;
 
   var files = Array.from(input.files);
-  var folder = (files[0].webkitRelativePath || files[0].name).split('/')[0];
+  // folder name from webkitRelativePath (Windows: backslash or forward-slash)
+  var firstPath = files[0].webkitRelativePath || files[0].name;
+  var folder = firstPath.split(/[/\\]/)[0] || firstPath;
 
   // Save folder metadata
-  _appSettings.folderPath  = folder;
-  _appSettings.fileCount   = files.length;
-  if(typeof _saveSettings === 'function') _saveSettings();
+  try{
+    _appSettings.folderPath = folder;
+    _appSettings.fileCount  = files.length;
+    if(typeof _saveSettings === 'function') _saveSettings();
+  }catch(e){ console.warn('FinTrack: _appSettings not accessible', e); }
 
   var supported = files.filter(function(f){
     return /\.(xlsx|xls|csv)$/i.test(f.name);
   });
 
   if(supported.length === 0){
-    if(typeof showToast === 'function') showToast('⚠️ לא נמצאו קבצי Excel בתיקייה');
+    _showToast('⚠️ לא נמצאו קבצי Excel/CSV בתיקייה. בדוק סוגי קבצים.');
     return;
   }
 
-  showToast('⏳ טוען ' + supported.length + ' קבצים...');
+  _showToast('⏳ טוען ' + supported.length + ' קבצים...');
 
-  // Read all files, then merge & render
+  // Show loading progress bar in folder overlay
+  var pb = document.getElementById('procBar');
+  var ov = document.getElementById('processingOverlay');
+  if(ov){ ov.style.display='flex'; }
+
   var results = [];
-  var done = 0;
+  var done    = 0;
+  var report  = []; // per-file summary for diagnostics
 
   supported.forEach(function(file){
     var reader = new FileReader();
     reader.onload = function(e){
+      var fileTxns = [];
+      var detected = 'לא זוהה';
       try{
         var data = new Uint8Array(e.target.result);
         var wb   = XLSX.read(data, {type:'array', cellDates:true});
-        var txns = _parseWorkbook(wb, file.name);
-        results = results.concat(txns);
+        var r    = _parseWorkbook(wb, file.name);
+        fileTxns = r.txns;
+        detected = r.format;
+        results  = results.concat(fileTxns);
       }catch(err){
-        console.warn('FinTrack: could not parse', file.name, err);
+        detected = 'שגיאה: ' + (err.message||err);
+        console.warn('FinTrack: parse error in', file.name, err);
       }
+      report.push({ name: file.name, format: detected, count: fileTxns.length });
       done++;
-      if(done === supported.length) _finalizeLoad(results, supported.length, folder);
+
+      // Update progress bar
+      if(pb) pb.style.width = Math.round(done/supported.length*100) + '%';
+
+      if(done === supported.length){
+        if(ov) ov.style.display='none';
+        _finalizeLoad(results, supported.length, folder, report);
+      }
     };
     reader.readAsArrayBuffer(file);
   });
 };
 
-/* same for the wizard input */
 window.handleWizFolderPick = window.handleFolderPick;
 
 /* ══════════════════════════════════════════════
-   FINALIZE: merge into TRANSACTIONS + render
+   FINALIZE
 ══════════════════════════════════════════════ */
-function _finalizeLoad(txns, fileCount, folder){
-  if(txns.length === 0){
-    showToast('⚠️ לא נמצאו עסקאות בקבצים שנבחרו. בדוק שהקבצים הם ייצוא מהבנק/אשראי.');
-    return;
-  }
-
-  // Deduplicate by key = date+name+amount
+function _finalizeLoad(txns, fileCount, folder, report){
+  // Deduplicate
   var seen = {};
   var unique = txns.filter(function(t){
     var key = t.date + '|' + t.name + '|' + t.amount;
@@ -82,48 +96,60 @@ function _finalizeLoad(txns, fileCount, folder){
     return true;
   });
 
-  // Sort by date desc
   unique.sort(function(a,b){ return b.date.localeCompare(a.date); });
 
-  // Replace global TRANSACTIONS
-  // eslint-disable-next-line no-undef
+  // Push to global TRANSACTIONS
   TRANSACTIONS.length = 0;
   unique.forEach(function(t){ TRANSACTIONS.push(t); });
 
-  // Save to localStorage for persistence (up to ~2MB)
+  // Persist to localStorage
   try{
     localStorage.setItem('loadedTransactions', JSON.stringify(unique.slice(0,2000)));
     localStorage.setItem('loadedTransactionsTS', Date.now().toString());
   }catch(e){}
 
-  // Update months list
+  // Rebuild month list & re-render
   _rebuildMonths();
-
-  // Re-render everything
   if(typeof renderAll === 'function') renderAll();
   if(typeof renderManagementTab === 'function') renderManagementTab();
 
-  showToast('✅ נטענו ' + unique.length + ' עסקאות מ-' + fileCount + ' קבצים');
+  // Update header subtitle + updated badge
+  _updateHeaderMeta();
 
-  // Close any open overlays
-  var ov = document.getElementById('setupWizard');
-  if(ov) ov.style.display = 'none';
-  var fov = document.getElementById('folderStepOverlay');
-  if(fov) fov.style.display = 'none';
+  // Close overlays
+  ['setupWizard','folderStepOverlay','noDataOverlay'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.style.display = 'none';
+  });
 
-  // Advance flow state
+  // Flow state
   if(window._flowState){ window._flowState.filesDone = true; }
+  try{ localStorage.removeItem('onboardingFilesSkipped'); }catch(e){}
   if(typeof navSetStep === 'function') navSetStep('dashboard');
 
-  // Hide empty state
-  var es = document.getElementById('emptyState');
-  if(es) es.style.display = 'none';
-  var ma = document.getElementById('mainApp');
-  if(ma) ma.style.display = 'block';
+  // Show result
+  if(unique.length === 0){
+    // Build diagnostic message
+    var unknownFiles = report.filter(function(r){ return r.count === 0; }).map(function(r){ return r.name; });
+    var msg = '⚠️ הקבצים נטענו אך לא נמצאו עסקאות.\n\n';
+    if(unknownFiles.length){
+      msg += 'קבצים שלא זוהו: ' + unknownFiles.join(', ') + '\n\n';
+    }
+    msg += 'פורמטים נתמכים: מקס/ישראכרט, לאומי אשראי, דיינרס, דפי בנק.';
+    _showToast('⚠️ לא נמצאו עסקאות — ראה קונסול לפרטים');
+    console.warn('FinTrack diagnostic report:', report);
+    alert(msg);
+    return;
+  }
+
+  // Success toast
+  var successCount = report.filter(function(r){ return r.count > 0; }).length;
+  _showToast('✅ ' + unique.length + ' עסקאות נטענו מ-' + successCount + '/' + fileCount + ' קבצים');
+  console.log('FinTrack: loaded', unique.length, 'transactions. Report:', report);
 }
 
 /* ══════════════════════════════════════════════
-   LOAD SAVED TRANSACTIONS on startup
+   RESTORE SAVED TRANSACTIONS
 ══════════════════════════════════════════════ */
 window.loadSavedTransactions = function(){
   try{
@@ -139,93 +165,164 @@ window.loadSavedTransactions = function(){
 };
 
 /* ══════════════════════════════════════════════
-   REBUILD MONTHS_ORDER from loaded data
+   UPDATE HEADER META (subtitle + עודכן badge)
+══════════════════════════════════════════════ */
+window._updateHeaderMeta = function _updateHeaderMeta(){
+  var sub   = document.getElementById('headerSubtitle');
+  var badge = document.getElementById('headerUpdatedBadge');
+  if(!sub && !badge) return;
+
+  if(!TRANSACTIONS || TRANSACTIONS.length === 0){
+    if(sub){ sub.textContent = 'אין נתונים — טען קבצים פיננסיים'; sub.style.color='#64748b'; }
+    if(badge) badge.style.display = 'none';
+    return;
+  }
+
+  // Date range
+  var dates = TRANSACTIONS.map(function(t){ return t.date; }).filter(Boolean).sort();
+  var first = dates[0], last = dates[dates.length-1];
+  function _fmtDate(iso){
+    if(!iso) return '';
+    var p = iso.split('-');
+    var heM = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+    return p[2]+' '+heM[parseInt(p[1],10)-1]+' '+p[0];
+  }
+  var range = _fmtDate(first) + ' — ' + _fmtDate(last);
+
+  // Count unique cards
+  var cards = {};
+  TRANSACTIONS.forEach(function(t){ if(t.card) cards[t.card]=1; });
+  var cardCount = Object.keys(cards).length;
+
+  if(sub){
+    sub.textContent = range + ' · ' + TRANSACTIONS.length + ' עסקאות · ' + cardCount + ' מקורות';
+    sub.style.color = '#94a3b8';
+  }
+
+  // Updated badge with full date+time
+  if(badge){
+    var now = new Date();
+    var heM = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+    var pad = function(n){ return ('0'+n).slice(-2); };
+    var ts = now.getDate()+' '+heM[now.getMonth()]+' '+now.getFullYear()+
+             ' · '+pad(now.getHours())+':'+pad(now.getMinutes());
+    badge.textContent = 'עודכן: ' + ts;
+    badge.style.display = 'block';
+  }
+};
+
+/* ══════════════════════════════════════════════
+   REBUILD MONTHS_ORDER
 ══════════════════════════════════════════════ */
 function _rebuildMonths(){
   var monthSet = {};
-  var heMonths = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+  var heM = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
   TRANSACTIONS.forEach(function(t){
     if(!t.date) return;
-    var parts = t.date.split('-');
-    if(parts.length < 2) return;
-    var y = parts[0], m = parseInt(parts[1],10);
+    var p = t.date.split('-');
+    if(p.length < 2) return;
+    var y = p[0], m = parseInt(p[1],10);
     if(!y || !m) return;
-    var label = heMonths[m-1] + ' ' + y;
+    var label = heM[m-1]+' '+y;
     monthSet[y+'-'+('0'+m).slice(-2)] = label;
   });
   var sorted = Object.keys(monthSet).sort();
-  // eslint-disable-next-line no-undef
   MONTHS_ORDER.length = 0;
   sorted.forEach(function(k){ MONTHS_ORDER.push(monthSet[k]); });
+
+  // Update filter dropdown with actual months
+  var sel = document.getElementById('filterMonth');
+  if(sel){
+    var cur = sel.value;
+    sel.innerHTML = '<option value="all">כל החודשים</option>';
+    sorted.forEach(function(k){
+      var label = monthSet[k];
+      var opt = document.createElement('option');
+      opt.value = label; opt.textContent = label;
+      if(label === cur) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  }
 }
 
 /* ══════════════════════════════════════════════
-   WORKBOOK PARSER — tries each format
+   WORKBOOK PARSER
 ══════════════════════════════════════════════ */
 function _parseWorkbook(wb, filename){
   var all = [];
+  var format = 'לא זוהה';
   wb.SheetNames.forEach(function(sname){
-    var ws  = wb.Sheets[sname];
+    var ws   = wb.Sheets[sname];
     var rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:'', raw:false});
-    var txns = _tryAllFormats(rows, filename, sname);
-    all = all.concat(txns);
+    var r    = _tryAllFormats(rows, filename, sname);
+    if(r.format !== 'לא זוהה') format = r.format;
+    all = all.concat(r.txns);
   });
-  return all;
+  return { txns: all, format: format };
 }
+
+/* ── Normalize cell text: trim + collapse all whitespace/newlines to single space ── */
+function _norm(v){ return String(v||'').replace(/\s+/g,' ').trim(); }
 
 function _tryAllFormats(rows, filename, sheetName){
-  // Detect format by searching for known header signatures
-  for(var i = 0; i < Math.min(rows.length, 15); i++){
-    var row = rows[i].map(function(c){ return String(c||'').trim(); });
+  for(var i = 0; i < Math.min(rows.length, 20); i++){
+    // Normalize each cell — this fixes cells with \n inside (e.g. Diners)
+    var row    = rows[i].map(_norm);
     var joined = row.join('|');
 
-    // Format 1: MaxCard — "תאריך רכישה"
+    // Format 1: MaxCard / Isracard — "תאריך רכישה" + "שם בית עסק"
     if(joined.includes('תאריך רכישה') && joined.includes('שם בית עסק')){
-      return _parseMaxCard(rows, i, filename);
+      return { txns: _parseMaxCard(rows, i, filename), format: 'MaxCard/Isracard' };
     }
 
-    // Format 2: Leumi CC export — "שם בית העסק" + "קטגוריה" + "4 ספרות"
+    // Format 2: Leumi CC export — "שם בית העסק" + "קטגוריה" + "ספרות"
     if(joined.includes('שם בית העסק') && joined.includes('קטגוריה') && joined.includes('ספרות')){
-      return _parseLeumiExport(rows, i, filename);
+      return { txns: _parseLeumiExport(rows, i, filename), format: 'LeumiExport' };
     }
 
-    // Format 3: Diners/Max without category — "שם בית עסק" + "סכום חיוב" + "סוג עסקה"
-    if(joined.includes('שם בית עסק') && joined.includes('סכום חיוב') && joined.includes('סוג עסקה')){
-      return _parseDiners(rows, i, filename);
+    // Format 3: Diners/Max new — "שם בית עסק" + ("סכום חיוב" or "סכום ח") + ("סוג עסקה" or "ענף")
+    if(joined.includes('שם בית עסק') && (joined.includes('סכום חיוב') || joined.includes('סכום ח')) &&
+       (joined.includes('סוג עסקה') || joined.includes('ענף'))){
+      return { txns: _parseDiners(rows, i, filename), format: 'Diners/Max' };
     }
 
-    // Format 4: Fibi/bank statement — "תאריך" + "תיאור" + "חובה/זכות"
-    if((joined.includes('תאריך') && (joined.includes('חובה') || joined.includes('זכות') || joined.includes('יתרה')))){
-      return _parseBankStatement(rows, i, filename);
+    // Format 4: Bank statement — "תאריך" + ("חובה" or "זכות" or "יתרה")
+    if(joined.includes('תאריך') && (joined.includes('חובה') || joined.includes('זכות') || joined.includes('יתרה'))){
+      return { txns: _parseBankStatement(rows, i, filename), format: 'BankStatement' };
     }
   }
-  console.warn('FinTrack: unknown format in', filename, sheetName);
-  return [];
+  console.warn('FinTrack: unknown format —', filename, sheetName,
+    '| first rows:', rows.slice(0,5).map(function(r){ return r.map(_norm).join('|'); }));
+  return { txns: [], format: 'לא זוהה' };
 }
 
-/* ── Format 1: MaxCard (כרטיסי מקס / לאומי קארד) ─────────────
-   Row layout: תאריך רכישה | שם בית עסק | סכום עסקה | מטבע | סכום חיוב | מטבע | שובר | פירוט
-   Card number comes from filename or from a row before headers.
-   Date format: DD.MM.YY  or  DD/MM/YY
-──────────────────────────────────────────────────────────────── */
+/* ── Format 1: MaxCard / Isracard ─────────────────────────────────────────
+   Header: תאריך רכישה | שם בית עסק | סכום עסקה | מטבע עסקה | סכום חיוב | מטבע חיוב | מס' שובר | פירוט נוסף
+   Date:   DD.MM.YY  or  DD.MM.YYYY
+   Card:   from filename or from a description row above (e.g. "קורפוריט - זהב - 2039")
+────────────────────────────────────────────────────────────────────────────── */
 function _parseMaxCard(rows, headerRow, filename){
   var card = _cardFromFilename(filename);
-  // Also try to read from a description row above (e.g., "קורפוריט - זהב - 2039")
   for(var k = 0; k < headerRow; k++){
-    var m = String(rows[k][0]||'').match(/[-–]\s*(\d{4})\s*$/);
-    if(m) { card = '*' + m[1]; break; }
+    var desc = _norm(rows[k][0] || '');
+    var m = desc.match(/[-–]\s*(\d{4})\s*$/);
+    if(m){ card = '*' + m[1]; break; }
   }
 
   var txns = [];
   for(var i = headerRow + 1; i < rows.length; i++){
-    var row = rows[i];
-    var dateRaw  = String(row[0]||'').trim();
-    var name     = String(row[1]||'').trim();
-    var amtRaw   = String(row[4]||row[2]||'').replace(/[₪,\s]/g,'');
-    var chargeType = String(row[7]||'').trim(); // פירוט נוסף
+    var row      = rows[i];
+    var dateRaw  = _norm(row[0]);
+    var name     = _norm(row[1]);
+    // col[4] = סכום חיוב (actual charged), col[2] = סכום עסקה (original) — prefer col[4] if non-empty
+    var chargeRaw = _norm(row[4]);
+    var origRaw   = _norm(row[2]);
+    var amtRaw    = (chargeRaw && chargeRaw !== '' && chargeRaw !== '0') ? chargeRaw : origRaw;
+    amtRaw        = amtRaw.replace(/[₪,\s]/g,'');
+    var detail    = _norm(row[7]);
 
-    if(!dateRaw || !name || !amtRaw) continue;
-    if(name.includes('סה"כ') || name.includes('תנאים')) continue; // skip totals
+    if(!dateRaw || !name) continue;
+    if(name.includes('סה"כ') || name.includes('תנאים') || name.length < 2) continue;
 
     var amount = parseFloat(amtRaw);
     if(isNaN(amount) || amount === 0) continue;
@@ -233,31 +330,28 @@ function _parseMaxCard(rows, headerRow, filename){
     var date = _parseDate(dateRaw);
     if(!date) continue;
 
-    var type = chargeType.includes('הוראת קבע') ? 'קבוע' : 'משתנה';
+    var type = (detail.includes('הוראת קבע') || name.includes('הוראת קבע')) ? 'קבוע' : 'משתנה';
 
-    txns.push({
-      date: date, name: name, amount: amount,
-      card: card, chargeType: type,
-      category: '', source: 'MaxCard'
-    });
+    txns.push({ date:date, name:name, amount:Math.abs(amount),
+      card:card, chargeType:type, category:'', source:'MaxCard' });
   }
   return txns;
 }
 
-/* ── Format 2: Leumi CC Export ───────────────────────────────
-   Row 4 header: תאריך עסקה | שם בית העסק | קטגוריה | 4 ספרות | סוג עסקה | סכום חיוב | מטבע
-   Date format: DD-MM-YYYY
-──────────────────────────────────────────────────────────────── */
+/* ── Format 2: Leumi CC Export ─────────────────────────────────────────────
+   Header: תאריך עסקה | שם בית העסק | קטגוריה | 4 ספרות אחרונות | סוג עסקה | סכום חיוב | מטבע חיוב
+   Date:   DD-MM-YYYY
+────────────────────────────────────────────────────────────────────────────── */
 function _parseLeumiExport(rows, headerRow, filename){
   var txns = [];
   for(var i = headerRow + 1; i < rows.length; i++){
-    var row = rows[i];
-    var dateRaw = String(row[0]||'').trim();
-    var name    = String(row[1]||'').trim();
-    var cat     = String(row[2]||'').trim();
-    var card4   = String(row[3]||'').trim().replace(/\D/g,'');
-    var sog     = String(row[4]||'').trim();
-    var amtRaw  = String(row[5]||'').replace(/[₪,\s]/g,'');
+    var row     = rows[i];
+    var dateRaw = _norm(row[0]);
+    var name    = _norm(row[1]);
+    var cat     = _norm(row[2]);
+    var card4   = _norm(row[3]).replace(/\D/g,'');
+    var sog     = _norm(row[4]);
+    var amtRaw  = _norm(row[5]).replace(/[₪,\s]/g,'');
 
     if(!dateRaw || !name || !amtRaw) continue;
     if(name.includes('סה"כ')) continue;
@@ -271,32 +365,30 @@ function _parseLeumiExport(rows, headerRow, filename){
     var type = sog.includes('הוראת קבע') ? 'קבוע' : 'משתנה';
     var card = card4 ? '*' + card4.slice(-4) : _cardFromFilename(filename);
 
-    txns.push({
-      date: date, name: name, amount: amount,
-      card: card, chargeType: type,
-      category: cat, source: 'LeumiExport'
-    });
+    txns.push({ date:date, name:name, amount:Math.abs(amount),
+      card:card, chargeType:type, category:cat, source:'LeumiExport' });
   }
   return txns;
 }
 
-/* ── Format 3: Diners / Mastercard ──────────────────────────
-   Row 4 header: תאריך עסקה | שם בית עסק | סכום עסקה | סכום חיוב | סוג עסקה | ענף | הערות
-   Date: YYYY-MM-DD HH:MM:SS  or  DD/MM/YYYY
-──────────────────────────────────────────────────────────────── */
+/* ── Format 3: Diners / Max ──────────────────────────────────────────────────
+   Header: תאריך עסקה | שם בית עסק | סכום עסקה | סכום חיוב | סוג עסקה | ענף | הערות
+   (cells may contain \n — handled by _norm in detection)
+   Date:   YYYY-MM-DD HH:MM:SS
+────────────────────────────────────────────────────────────────────────────── */
 function _parseDiners(rows, headerRow, filename){
   var card = _cardFromFilename(filename);
   var txns = [];
   for(var i = headerRow + 1; i < rows.length; i++){
-    var row = rows[i];
-    var dateRaw = String(row[0]||'').trim();
-    var name    = String(row[1]||'').trim();
-    var amtRaw  = String(row[3]||row[2]||'').replace(/[₪,\s]/g,'');
-    var sog     = String(row[4]||'').trim();
-    var cat     = String(row[5]||'').trim();
+    var row     = rows[i];
+    var dateRaw = _norm(row[0]);
+    var name    = _norm(row[1]);
+    var amtRaw  = _norm(row[3] || row[2]).replace(/[₪,\s]/g,'');
+    var sog     = _norm(row[4]);
+    var cat     = _norm(row[5]);
 
     if(!dateRaw || !name || !amtRaw) continue;
-    if(name.includes('סה"כ') || name.includes('תנאים')) continue;
+    if(name.includes('סה"כ') || name.includes('תנאים') || name.length < 2) continue;
 
     var amount = parseFloat(amtRaw);
     if(isNaN(amount) || amount === 0) continue;
@@ -306,48 +398,41 @@ function _parseDiners(rows, headerRow, filename){
 
     var type = sog.includes('הוראת קבע') ? 'קבוע' : 'משתנה';
 
-    txns.push({
-      date: date, name: name, amount: amount,
-      card: card, chargeType: type,
-      category: cat, source: 'Diners'
-    });
+    txns.push({ date:date, name:name, amount:Math.abs(amount),
+      card:card, chargeType:type, category:cat, source:'Diners' });
   }
   return txns;
 }
 
-/* ── Format 4: Bank Statement (Fibi / Leumi) ─────────────────
+/* ── Format 4: Bank Statement (Fibi / Leumi / etc.) ─────────────────────────
    Typical: תאריך | תיאור | אסמכתא | חובה | זכות | יתרה
-──────────────────────────────────────────────────────────────── */
+────────────────────────────────────────────────────────────────────────────── */
 function _parseBankStatement(rows, headerRow, filename){
   var txns = [];
-  var hdrs = rows[headerRow].map(function(c){ return String(c||'').trim(); });
+  var hdrs   = rows[headerRow].map(_norm);
   var iDate  = _colIdx(hdrs, ['תאריך','date']);
-  var iDesc  = _colIdx(hdrs, ['תיאור','פרטים','description','בית עסק']);
+  var iDesc  = _colIdx(hdrs, ['תיאור','פרטים','description','בית עסק','תנועה']);
   var iDebit = _colIdx(hdrs, ['חובה','הוצאה','debit']);
   var iCredit= _colIdx(hdrs, ['זכות','הכנסה','credit']);
 
   if(iDate < 0 || iDesc < 0) return [];
 
   for(var i = headerRow + 1; i < rows.length; i++){
-    var row = rows[i];
-    var dateRaw = String(row[iDate]||'').trim();
-    var name    = String(row[iDesc]||'').trim();
-    var debit   = iDebit >= 0 ? parseFloat(String(row[iDebit]||'').replace(/[₪,\s]/g,'')) : NaN;
-    var credit  = iCredit >= 0? parseFloat(String(row[iCredit]||'').replace(/[₪,\s]/g,'')): NaN;
+    var row     = rows[i];
+    var dateRaw = _norm(row[iDate]);
+    var name    = _norm(row[iDesc]);
+    var debit   = iDebit  >= 0 ? parseFloat(_norm(row[iDebit]).replace(/[₪,\s]/g,''))  : NaN;
+    var credit  = iCredit >= 0 ? parseFloat(_norm(row[iCredit]).replace(/[₪,\s]/g,'')) : NaN;
 
-    if(!dateRaw || !name) continue;
-    if(name.length < 2) continue;
+    if(!dateRaw || !name || name.length < 2) continue;
 
     var date = _parseDate(dateRaw);
     if(!date) continue;
 
-    // Debit = expense, Credit = income
-    if(!isNaN(debit) && debit > 0){
+    if(!isNaN(debit) && debit > 0)
       txns.push({ date:date, name:name, amount:debit, card:'בנק', chargeType:'משתנה', category:'', source:'Bank' });
-    }
-    if(!isNaN(credit) && credit > 0){
-      txns.push({ date:date, name:name+'(הכנסה)', amount:credit, card:'בנק', chargeType:'משתנה', category:'הכנסה', source:'Bank' });
-    }
+    if(!isNaN(credit) && credit > 0)
+      txns.push({ date:date, name:name+' (הכנסה)', amount:credit, card:'בנק', chargeType:'משתנה', category:'הכנסה', source:'Bank' });
   }
   return txns;
 }
@@ -356,8 +441,7 @@ function _parseBankStatement(rows, headerRow, filename){
    HELPERS
 ══════════════════════════════════════════════ */
 function _cardFromFilename(filename){
-  // e.g. "2039_01_2026.xlsx" → "*2039"
-  // e.g. "1974 - 15.03.26.xlsx" → "*1974"
+  // "2039_01_2026.xlsx" → "*2039",  "פירוט ... 1974 - ..." → "*1974"
   var m = filename.match(/(\d{4})/);
   return m ? '*' + m[1] : 'כרטיס';
 }
@@ -366,69 +450,67 @@ function _parseDate(raw){
   if(!raw) return null;
   raw = raw.trim();
 
-  // YYYY-MM-DD HH:MM:SS
+  // YYYY-MM-DD HH:MM:SS  or  YYYY-MM-DD
   var m = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if(m) return m[1] + '-' + m[2] + '-' + m[3];
+  if(m) return m[1]+'-'+m[2]+'-'+m[3];
 
-  // DD.MM.YY or DD.MM.YYYY
+  // DD.MM.YYYY  or  DD/MM/YYYY  or  DD-MM-YYYY  (generic two-digit day/month)
   m = raw.match(/^(\d{1,2})[./\-](\d{1,2})[./\-](\d{2,4})$/);
   if(m){
     var d=m[1], mo=m[2], y=m[3];
-    if(y.length===2) y = (parseInt(y)<50 ? '20':'19') + y;
-    return y + '-' + ('0'+mo).slice(-2) + '-' + ('0'+d).slice(-2);
+    if(y.length===2) y = (parseInt(y,10)<50?'20':'19')+y;
+    return y+'-'+('0'+mo).slice(-2)+'-'+('0'+d).slice(-2);
   }
-
-  // DD-MM-YYYY (Leumi export style)
-  m = raw.match(/^(\d{2})-(\d{2})-(\d{4})$/);
-  if(m) return m[3] + '-' + m[2] + '-' + m[1];
 
   // Excel serial number
-  var num = parseInt(raw);
+  var num = parseInt(raw,10);
   if(!isNaN(num) && num > 40000 && num < 60000){
-    var jsDate = new Date((num - 25569) * 86400 * 1000);
-    var y2 = jsDate.getUTCFullYear();
-    var mo2 = jsDate.getUTCMonth()+1;
-    var d2  = jsDate.getUTCDate();
-    return y2+'-'+('0'+mo2).slice(-2)+'-'+('0'+d2).slice(-2);
+    var jsDate = new Date((num-25569)*86400*1000);
+    return jsDate.getUTCFullYear()+'-'+('0'+(jsDate.getUTCMonth()+1)).slice(-2)+'-'+('0'+jsDate.getUTCDate()).slice(-2);
   }
 
-  // JS Date string from XLSX cellDates:true
-  if(raw.includes('T') || raw.includes('00:00')){
-    var d3 = new Date(raw);
-    if(!isNaN(d3)){
-      return d3.getFullYear()+'-'+('0'+(d3.getMonth()+1)).slice(-2)+'-'+('0'+d3.getDate()).slice(-2);
-    }
+  // JS Date string from XLSX cellDates:true  (e.g. "Fri Jan 01 2026 00:00:00")
+  if(raw.length > 6){
+    var d2 = new Date(raw);
+    if(!isNaN(d2))
+      return d2.getFullYear()+'-'+('0'+(d2.getMonth()+1)).slice(-2)+'-'+('0'+d2.getDate()).slice(-2);
   }
 
   return null;
 }
 
 function _colIdx(headers, candidates){
-  for(var ci = 0; ci < candidates.length; ci++){
-    for(var hi = 0; hi < headers.length; hi++){
+  for(var ci=0; ci<candidates.length; ci++)
+    for(var hi=0; hi<headers.length; hi++)
       if(headers[hi].includes(candidates[ci])) return hi;
-    }
-  }
   return -1;
 }
 
+function _showToast(msg){
+  if(typeof showToast === 'function') showToast(msg);
+  else console.log('FinTrack toast:', msg);
+}
+
 /* ══════════════════════════════════════════════
-   Also wire up the wizard folder input
+   INIT
 ══════════════════════════════════════════════ */
-// Override openSetupWizard's inner handler to use our parser
 document.addEventListener('DOMContentLoaded', function(){
 
-  // Auto-load saved transactions if present
+  // Restore saved transactions
   setTimeout(function(){
     if(typeof loadSavedTransactions === 'function' && loadSavedTransactions()){
       if(typeof renderAll === 'function') renderAll();
-      console.log('FinTrack: loaded', TRANSACTIONS.length, 'saved transactions');
+      _updateHeaderMeta();
+      console.log('FinTrack: restored', TRANSACTIONS.length, 'saved transactions');
+    } else {
+      // No data yet — show empty state subtitle
+      _updateHeaderMeta();
     }
   }, 800);
 
-  // Patch dynamic inputs created by openSetupWizard
+  // Intercept all webkitdirectory file inputs via event delegation
   document.addEventListener('change', function(e){
-    if(e.target && e.target.type === 'file' && e.target.getAttribute('webkitdirectory') !== null){
+    if(e.target && e.target.type==='file' && e.target.getAttribute('webkitdirectory')!==null){
       window.handleFolderPick(e.target);
     }
   });

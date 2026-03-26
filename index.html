@@ -184,7 +184,26 @@ if(typeof Chart==='undefined'){
             המשך →
           </button>
 
-          <p class="auth-privacy" style="margin-top:18px;font-size:11px;">
+          <!-- Onboarding steps preview — new users only -->
+          <div id="onboardingPreview" style="margin-top:16px;background:#0f172a;border:1px solid #1e3a5f;border-radius:11px;padding:12px 14px;">
+            <div style="color:#64748b;font-size:11px;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">מה קורה אחרי ההרשמה?</div>
+            <div style="display:flex;flex-direction:column;gap:7px;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:15px;flex-shrink:0;">👤</span>
+                <div style="font-size:12px;color:#94a3b8;line-height:1.4;"><span style="color:#e2e8f0;font-weight:600;">מילוי פרופיל</span> — הכנסות, הוצאות יעד, בני משפחה</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:15px;flex-shrink:0;">📂</span>
+                <div style="font-size:12px;color:#94a3b8;line-height:1.4;"><span style="color:#e2e8f0;font-weight:600;">חיבור קבצים</span> — ייצוא Excel מהבנק וכרטיסי האשראי</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:15px;flex-shrink:0;">📊</span>
+                <div style="font-size:12px;color:#94a3b8;line-height:1.4;"><span style="color:#e2e8f0;font-weight:600;">דשבורד + תובנות</span> — ניתוח מלא, גרפים, המלצות</div>
+              </div>
+            </div>
+          </div>
+
+          <p class="auth-privacy" style="margin-top:14px;font-size:11px;">
             <span>🔒</span> הנתונים שלך מוצפנים. לא נחשפים לצד שלישי.
           </p>
         </div>
@@ -512,10 +531,10 @@ if(typeof Chart==='undefined'){
 <div class="header">
   <div>
     <h1>📊 דשבורד פיננסי <span id="headerUserName" style="color:#93c5fd;font-weight:900;"></span></h1>
-    <p>מעקב הכנסות והוצאות חודשי · ינואר – מרץ 2026 · 9 כרטיסי אשראי · 2 חשבונות בנק</p>
+    <p id="headerSubtitle" style="color:#64748b;font-size:13px;margin:2px 0 0;">טוען נתונים...</p>
   </div>
   <div style="display:flex;align-items:center;gap:10px;">
-    <div class="header-badge">עודכן: מרץ 2026</div>
+    <div class="header-badge" id="headerUpdatedBadge" style="display:none;"></div>
     <button onclick="reopenFolderStep()" style="background:rgba(59,130,246,0.25);color:#93c5fd;border:1px solid rgba(59,130,246,0.5);border-radius:8px;padding:6px 14px;font-size:13px;font-weight:700;cursor:pointer;">📂 טען קבצים חדשים</button>
     <button onclick="openProfileModal()" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:6px 14px;font-size:13px;font-weight:700;cursor:pointer;">✏️ ערוך פרופיל</button>
     <button onclick="openFlowGuide()" style="background:rgba(255,214,0,0.18);color:#fde68a;border:1px solid rgba(255,214,0,0.35);border-radius:8px;padding:6px 14px;font-size:13px;font-weight:700;cursor:pointer;" title="הצג הדרכה">❓ הדרכה</button>
@@ -531,7 +550,7 @@ if(typeof Chart==='undefined'){
   <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#94a3b8;">
     <span>📂</span>
     <span id="uib-folder-text" style="color:#f87171;">תיקייה לא הוגדרה</span>
-    <button onclick="switchTab('management');setTimeout(()=>document.getElementById('settings-folder-path')?.focus(),200)" style="background:#334155;color:#93c5fd;border:none;border-radius:5px;padding:2px 8px;font-size:11px;cursor:pointer;">הגדר</button>
+    <button onclick="reopenFolderStep()" style="background:#334155;color:#93c5fd;border:none;border-radius:5px;padding:2px 8px;font-size:11px;cursor:pointer;">הגדר</button>
   </div>
   <div style="margin-right:auto;display:flex;gap:8px;align-items:center;"></div>
 </div>
@@ -1318,7 +1337,7 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeFlowG
 
 <!-- VERSION FOOTER -->
 <div id="versionFooter" style="position:fixed;bottom:8px;left:12px;z-index:99999;font-size:11px;color:#94a3b8;background:rgba(15,23,42,0.85);border:1px solid #1e3a5f;border-radius:6px;padding:3px 10px;font-family:monospace;pointer-events:none;backdrop-filter:blur(4px);">
-  FinTrack v1.10.0 · 2026-03-26 · File Parsing + UI Fixes
+  FinTrack v1.11.0 · 2026-03-26 · Parser Fix + Dynamic Header
 </div>
 
 </body>
