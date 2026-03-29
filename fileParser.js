@@ -108,15 +108,7 @@ function _finalizeLoad(txns, fileCount, folder, report){
     localStorage.setItem('loadedTransactionsTS', Date.now().toString());
   }catch(e){}
 
-  // Rebuild month list & re-render
-  _rebuildMonths();
-  if(typeof renderAll === 'function') renderAll();
-  if(typeof renderManagementTab === 'function') renderManagementTab();
-
-  // Update header subtitle + updated badge
-  _updateHeaderMeta();
-
-  // Close overlays
+  // Close overlays FIRST — before render, so they always close even if render fails
   ['setupWizard','folderStepOverlay','noDataOverlay'].forEach(function(id){
     var el = document.getElementById(id);
     if(el) el.style.display = 'none';
@@ -126,6 +118,16 @@ function _finalizeLoad(txns, fileCount, folder, report){
   if(window._flowState){ window._flowState.filesDone = true; }
   try{ localStorage.removeItem('onboardingFilesSkipped'); }catch(e){}
   if(typeof navSetStep === 'function') navSetStep('dashboard');
+
+  // Rebuild month list & re-render (wrapped so overlay close always runs)
+  _rebuildMonths();
+  try{
+    if(typeof renderAll === 'function') renderAll();
+    if(typeof renderManagementTab === 'function') renderManagementTab();
+  }catch(err){ console.error('FinTrack renderAll error:', err); }
+
+  // Update header subtitle + updated badge
+  _updateHeaderMeta();
 
   // Show result
   if(unique.length === 0){

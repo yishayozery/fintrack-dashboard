@@ -1491,7 +1491,7 @@ function renderTxTable(){
   document.getElementById('txTable').innerHTML=`
     <thead><tr><th style="width:28px;"><input type="checkbox" id="txSelectAll" onclick="toggleSelectAll(this)" style="width:15px;height:15px;cursor:pointer;" title="בחר הכל"></th><th></th><th>✓</th><th id="txDateHeader" title="חיוב = תאריך ביצוע (חויב בחודש שבחרת) | ביצוע = תאריך עסקה בפועל">תאריך ביצוע</th><th>שם בית עסק</th><th>קטגוריה</th><th>סוג</th><th>פרוייקט</th><th>כרטיס</th><th>סכום</th></tr></thead>
     <tbody>${page.map(t=>{
-      const effCat=getEffectiveCat(t);
+      const effCat=getEffectiveCat(t)||'אחר';
       const isChanged=catOverrides[t.id]!==undefined;
       const ct=t.chargeType||'משתנה';
       const rowId='tx-row-'+t.id;
