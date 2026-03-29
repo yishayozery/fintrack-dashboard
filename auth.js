@@ -262,11 +262,29 @@ window.reopenFolderStep = function() {
   };
 
   function _completeAuth(name, email, provider){
+    // ── If switching users: clear all previous data ─────────────────
+    var prevAuth = null;
+    try{ prevAuth = JSON.parse(localStorage.getItem('authUser')); }catch(e){}
+    var prevEmail = prevAuth && prevAuth.email ? prevAuth.email.toLowerCase() : '';
+    var newEmail  = email ? email.toLowerCase() : '';
+    if(prevEmail && prevEmail !== newEmail){
+      // Different user — wipe all financial data and onboarding state
+      ['loadedTransactions','loadedTransactionsTS','onboardingProfileSkipped',
+       'onboardingFilesSkipped','userProfile','catOverrides'].forEach(function(k){
+        localStorage.removeItem(k);
+      });
+      // Reset folder setting
+      try{ _appSettings.folderPath=''; _appSettings.fileCount=0; _appSettings.setupDone=false; _saveSettings(); }catch(e){}
+      // Clear in-memory arrays
+      try{ TRANSACTIONS.length=0; MONTHS_ORDER.length=0; }catch(e){}
+      // Reset userProfile in-memory
+      userProfile = {};
+    }
+
     var authUser = { name: name, email: email, provider: provider, ts: Date.now() };
     localStorage.setItem('authUser', JSON.stringify(authUser));
 
-    // Sync to userProfile — use direct localStorage write to avoid
-    // triggering the saveProfile() wrapper that jumps to folder step
+    // Sync to userProfile — direct write avoids triggering wrapper side-effects
     if(!userProfile.name) userProfile.name = name;
     if(!userProfile.email && email) userProfile.email = email;
     try {
@@ -499,7 +517,8 @@ function goToProfileFromOnboarding(){
   }, 150);
   // After profile, go to folder step per schema
   setTimeout(function(){
-    if(typeof showFolderStepIfNeeded==='function') showFolderStepIfNeeded();
+    if(typeof reopenFolderStep==='function') reopenFolderStep();
+    else if(typeof showFolderStepIfNeeded==='function') showFolderStepIfNeeded();
   }, 500);
 }
 function skipOnboardingProfile(){
@@ -512,7 +531,8 @@ function skipOnboardingProfile(){
 
   // Continue to next mandatory step: file upload (per schema)
   setTimeout(function(){
-    if(typeof showFolderStepIfNeeded==='function') showFolderStepIfNeeded();
+    if(typeof reopenFolderStep==='function') reopenFolderStep();
+    else if(typeof showFolderStepIfNeeded==='function') showFolderStepIfNeeded();
   }, 300);
 }
 
@@ -1123,28 +1143,16 @@ var PLATFORM_ADVISORS = [
 ];
 
 function openAdvisorSelection(){
-  // Skip if advisor already chosen in this session
-  if(localStorage.getItem('selectedPlatformAdvisor') && localStorage.getItem('advisorOnboardingDone')==='1'){
-    showFolderStepIfNeeded();
-    return;
+  // Navigate to overview tab and highlight the virtual advisor panel
+  if(typeof switchTab === 'function') switchTab('overview');
+  var vap = document.getElementById('virtualAdvisorPanel');
+  if(vap){
+    vap.style.display = 'block';
+    setTimeout(function(){ vap.scrollIntoView({behavior:'smooth',block:'start'}); }, 200);
+    // Flash highlight
+    vap.style.outline = '2px solid #3b82f6';
+    setTimeout(function(){ vap.style.outline = ''; }, 1400);
   }
-  var grid = document.getElementById('advisorCardsGrid');
-  var ov = document.getElementById('advisorSelectionOverlay');
-  if(!ov) { showFolderStepIfNeeded(); return; }
-  if(grid) grid.innerHTML = PLATFORM_ADVISORS.map(function(a){
-    return '<div onclick="selectAdvisor(\''+a.id+'\')" style="background:#1e293b;border:2px solid #1e3a5f;border-radius:14px;padding:16px;cursor:pointer;transition:border-color .2s;position:relative;" onmouseover="this.style.borderColor=\'#3b82f6\'" onmouseout="this.style.borderColor=\'#1e3a5f\'">'
-      +(a.badge ? '<div style="position:absolute;top:10px;left:10px;background:#1d4ed8;color:#93c5fd;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;">'+a.badge+'</div>' : '')
-      +'<div style="font-size:2.2em;margin-bottom:8px;">'+a.emoji+'</div>'
-      +'<div style="font-weight:700;color:#f1f5f9;font-size:14px;margin-bottom:2px;">'+a.name+'</div>'
-      +'<div style="color:#60a5fa;font-size:11px;font-weight:600;margin-bottom:8px;">'+a.specialty+'</div>'
-      +'<div style="color:#94a3b8;font-size:12px;line-height:1.45;margin-bottom:10px;">'+a.desc+'</div>'
-      +'<div style="display:flex;justify-content:space-between;align-items:center;">'
-      +'<span style="color:#fbbf24;font-size:12px;">★ '+a.rating+'</span>'
-      +'<span style="color:#64748b;font-size:11px;">'+a.clients+' לקוחות</span>'
-      +'</div>'
-      +'</div>';
-  }).join('');
-  ov.style.display = 'flex';
 }
 
 window.selectAdvisor = function(id){

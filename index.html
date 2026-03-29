@@ -406,7 +406,6 @@ if(typeof Chart==='undefined'){
 
     <!-- Hidden folder file input — triggered by triggerFolderPick() -->
     <input type="file" id="folderFileInput" webkitdirectory multiple
-      accept=".xlsx,.xls,.csv"
       style="display:none;"
       onchange="if(typeof handleFolderPick==='function') handleFolderPick(this);">
 
@@ -575,62 +574,6 @@ if(typeof Chart==='undefined'){
   <button class="btn btn-primary" onclick="switchTab('disputes')" style="margin-right:auto;">🔍 עבור לבדיקה</button>
 </div>
 
-<!-- FILTER BAR -->
-<div class="filter-bar">
-  <label>🗓 חודש:</label>
-  <select id="filterMonth" onchange="applyFilters()">
-    <option value="all">כל החודשים</option>
-    <option value="ינואר 2026">ינואר 2026</option>
-    <option value="פברואר 2026">פברואר 2026</option>
-    <option value="מרץ 2026">מרץ 2026</option>
-  </select>
-  <label>💳 מקור:</label>
-  <select id="filterCard" onchange="applyFilters()">
-    <option value="all">כל המקורות</option>
-    <optgroup label="── כרטיסי ישי ──">
-    <option value="*0328">דיסקונט *0328</option>
-    <option value="*2621">דיסקונט *2621</option>
-    <option value="*7959">מסטרקארד *7959</option>
-    </optgroup>
-    <optgroup label="── כרטיסי שלומית ──">
-    <option value="*2039">מסטרקארד קורפוריט *2039</option>
-    <option value="*5232">מסטרקארד גולד *5232</option>
-    <option value="*9781">לאומי ביזנס *9781</option>
-    </optgroup>
-    <optgroup label="── בנקים ──">
-    <option value="בנק פיבי">בנק הבינלאומי פיבי</option>
-    <option value="בנק לאומי">בנק לאומי</option>
-    </optgroup>
-  </select>
-  <label>🔍 הצג:</label>
-  <select id="filterType" onchange="applyFilters()">
-    <option value="regular">הוצאות שוטפות</option>
-    <option value="assets">נכסים / השקעות</option>
-    <option value="all">הכל (כולל פנימי)</option>
-  </select>
-  <label>🏷 קטגוריה:</label>
-  <select id="filterCat" onchange="applyFilters()">
-    <option value="all">כל הקטגוריות</option>
-  </select>
-  <label>⚡ סוג:</label>
-  <select id="filterChargeType" onchange="applyFilters()">
-    <option value="all">כל הסוגים</option>
-    <option value="קבוע">🔄 קבוע</option>
-    <option value="חד פעמי">⚡ חד פעמי</option>
-    <option value="משתנה">📊 משתנה</option>
-  </select>
-  <label>🗂️ פרוייקט:</label>
-  <select id="filterProject" onchange="applyFilters()">
-    <option value="all">כל הפרוייקטים</option>
-    <option value="assigned">עם שיוך בלבד</option>
-    <option value="unassigned">ללא שיוך</option>
-  </select>
-  <button class="btn btn-primary" onclick="resetFilters()">🔄 איפוס פילטרים</button>
-  <button class="btn" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;font-size:12px;" onclick="confirmSystemReset()">🗑️ איפוס מערכת</button>
-  <button class="btn-export" onclick="exportCSV()">📥 ייצוא CSV</button>
-  <button class="btn-export" onclick="exportJSON()" style="margin-right:4px;">📋 ייצוא JSON</button>
-</div>
-
 <!-- TABS -->
 <div class="tabs-wrap">
   <div class="tabs-grouped">
@@ -653,7 +596,6 @@ if(typeof Chart==='undefined'){
         <div class="tab" onclick="switchTab('categories')">🏷 קטגוריות</div>
         <div class="tab" onclick="switchTab('merchants')">🏪 בתי עסק</div>
         <div class="tab" onclick="switchTab('recommendations')">💡 המלצות</div>
-        <div class="tab" onclick="switchTab('insurance')">🛡️ ביטוח <span class="tab-badge" id="insuranceBadge" style="display:none;background:#f59e0b;">!</span></div>
         <div class="tab" onclick="switchTab('mortgage')">🏠 משכנתא</div>
         <div class="tab" onclick="switchTab('investments')">📈 השקעות</div>
       </div>
@@ -662,7 +604,6 @@ if(typeof Chart==='undefined'){
     <div class="tab-group">
       <div class="tab-group-label">🗂️ ניהול</div>
       <div class="tab-group-row">
-        <div class="tab" onclick="switchTab('management')">🗂️ ניהול</div>
         <div class="tab" onclick="openProfileModal()" id="profileTab">👤 פרופיל</div>
       </div>
     </div>
@@ -679,10 +620,54 @@ if(typeof Chart==='undefined'){
 
   <!-- ══════════ OVERVIEW ══════════ -->
   <div id="tab-overview" class="tab-content">
+    <!-- Profile summary card — populated by renderOverviewProfileCard() in app.js -->
+    <div id="overviewProfileCard" style="margin-bottom:16px;"></div>
+
     <!-- Virtual Advisor Panel — populated by advisor.js initVirtualAdvisor() -->
-    <div id="virtualAdvisorPanel" style="display:none;margin-bottom:18px;"></div>
+    <div id="virtualAdvisorPanel" style="margin-bottom:18px;"></div>
     <div id="benchmarkAlertsPanel"></div>
+
+    <!-- KPI Cards — summary totals -->
     <div class="kpi-grid" id="kpiGrid"></div>
+
+    <!-- FILTER BAR — below KPI data, filters the charts/data below -->
+    <div class="filter-bar" style="margin-top:10px;">
+      <label>🗓 חודש:</label>
+      <select id="filterMonth" onchange="applyFilters()">
+        <option value="all">כל החודשים</option>
+      </select>
+      <label>💳 מקור:</label>
+      <select id="filterCard" onchange="applyFilters()">
+        <option value="all">כל המקורות</option>
+      </select>
+      <label>🔍 הצג:</label>
+      <select id="filterType" onchange="applyFilters()">
+        <option value="regular">הוצאות שוטפות</option>
+        <option value="assets">נכסים / השקעות</option>
+        <option value="all">הכל (כולל פנימי)</option>
+      </select>
+      <label>🏷 קטגוריה:</label>
+      <select id="filterCat" onchange="applyFilters()">
+        <option value="all">כל הקטגוריות</option>
+      </select>
+      <label>⚡ סוג:</label>
+      <select id="filterChargeType" onchange="applyFilters()">
+        <option value="all">כל הסוגים</option>
+        <option value="קבוע">🔄 קבוע</option>
+        <option value="חד פעמי">⚡ חד פעמי</option>
+        <option value="משתנה">📊 משתנה</option>
+      </select>
+      <label>🗂️ פרוייקט:</label>
+      <select id="filterProject" onchange="applyFilters()">
+        <option value="all">כל הפרוייקטים</option>
+        <option value="assigned">עם שיוך בלבד</option>
+        <option value="unassigned">ללא שיוך</option>
+      </select>
+      <button class="btn btn-primary" onclick="resetFilters()">🔄 איפוס</button>
+      <button class="btn" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;font-size:12px;" onclick="confirmSystemReset()">🗑️ איפוס מערכת</button>
+      <button class="btn-export" onclick="exportCSV()">📥 CSV</button>
+      <button class="btn-export" onclick="exportJSON()" style="margin-right:4px;">📋 JSON</button>
+    </div>
     <div class="grid-2">
       <div class="card">
         <h3>📅 הוצאות לפי חודש</h3>
@@ -1342,7 +1327,7 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeFlowG
 
 <!-- VERSION FOOTER -->
 <div id="versionFooter" style="position:fixed;bottom:8px;left:12px;z-index:99999;font-size:11px;color:#94a3b8;background:rgba(15,23,42,0.85);border:1px solid #1e3a5f;border-radius:6px;padding:3px 10px;font-family:monospace;pointer-events:none;backdrop-filter:blur(4px);">
-  FinTrack v1.12.0 · 2026-03-29 · Auth + Overlay + Upload Fix
+  FinTrack v1.13.0 · 2026-03-29 · Responsive + Profile + Filter + Advisor Fix
 </div>
 
 </body>

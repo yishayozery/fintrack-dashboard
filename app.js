@@ -1638,6 +1638,8 @@ function renderRecommendations(data){
 // ═══════════════════════════════════════
 function renderAll(){
   const data=getFiltered();
+  populateFilterDropdowns();
+  renderOverviewProfileCard();
   renderKPIs(data);
   renderChargeTypeBreakdown(data);
   renderFixedVarChart(data);
@@ -1665,6 +1667,76 @@ function renderAll(){
   if(document.getElementById('tab-statement')?.classList.contains('active')) renderStatementTab();
   // Virtual advisor — runs after all data is processed
   if(typeof window.initVirtualAdvisor === 'function') window.initVirtualAdvisor(data);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Populate filter dropdowns dynamically from loaded transactions
+// ═══════════════════════════════════════════════════════════════
+function populateFilterDropdowns(){
+  // --- Month filter ---
+  const mSel = document.getElementById('filterMonth');
+  if(mSel){
+    const prevM = mSel.value;
+    // Collect unique months from MONTHS_ORDER or from transactions
+    const months = MONTHS_ORDER && MONTHS_ORDER.length ? MONTHS_ORDER.slice() :
+      [...new Set((TRANSACTIONS||[]).map(t=>t.month))].filter(Boolean).sort();
+    let html = '<option value="all">כל החודשים</option>';
+    months.forEach(m=>{ html += `<option value="${m}"${m===prevM?' selected':''}>${m}</option>`; });
+    mSel.innerHTML = html;
+  }
+
+  // --- Card/Source filter ---
+  const cSel = document.getElementById('filterCard');
+  if(cSel){
+    const prevC = cSel.value;
+    const sources = [...new Set((TRANSACTIONS||[]).map(t=>t.source).filter(Boolean))].sort();
+    let html = '<option value="all">כל המקורות</option>';
+    // Group by type: banks vs cards
+    const banks = sources.filter(s=>s.includes('בנק'));
+    const cards = sources.filter(s=>!s.includes('בנק'));
+    if(cards.length){
+      html += '<optgroup label="── כרטיסי אשראי ──">';
+      cards.forEach(s=>{ html += `<option value="${s}"${s===prevC?' selected':''}>${s}</option>`; });
+      html += '</optgroup>';
+    }
+    if(banks.length){
+      html += '<optgroup label="── חשבונות בנק ──">';
+      banks.forEach(s=>{ html += `<option value="${s}"${s===prevC?' selected':''}>${s}</option>`; });
+      html += '</optgroup>';
+    }
+    cSel.innerHTML = html;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Profile summary card in overview tab
+// ═══════════════════════════════════════════════════════════════
+function renderOverviewProfileCard(){
+  const el = document.getElementById('overviewProfileCard');
+  if(!el) return;
+  const p = typeof userProfile !== 'undefined' ? userProfile : {};
+  const auth = (function(){ try{ return JSON.parse(localStorage.getItem('authUser')||'{}'); }catch(e){ return {}; } })();
+  const name = p.name || auth.name || '';
+  const email = p.email || auth.email || '';
+  if(!name && !email){ el.innerHTML=''; return; }
+  const FAMILY_LABELS_LOCAL = {'single':'רווק/ה','married':'נשוי/אה','cohabiting':'ידועים בציבור','divorced':'גרוש/ה','widowed':'אלמן/ה'};
+  const fs = FAMILY_LABELS_LOCAL[p.familyStatus] || '';
+  const kids = parseInt(p.childrenCount)||0;
+  const region = p.region||'';
+  let tags = [];
+  if(fs) tags.push(fs);
+  if(kids>0) tags.push(kids+' ילדים');
+  if(region) tags.push(region);
+  const tagsHtml = tags.map(t=>`<span style="background:rgba(59,130,246,0.12);color:#93c5fd;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;">${t}</span>`).join(' ');
+  el.innerHTML = `<div style="background:linear-gradient(135deg,#0f172a,#1e293b);border:1px solid #334155;border-radius:14px;padding:16px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+    <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#1d4ed8);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">👤</div>
+    <div style="flex:1;min-width:0;">
+      <div style="font-weight:800;font-size:16px;color:#f1f5f9;">${name}</div>
+      ${email?`<div style="font-size:12px;color:#64748b;margin-top:1px;">${email}</div>`:''}
+      ${tagsHtml?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">${tagsHtml}</div>`:''}
+    </div>
+    <button onclick="openProfileModal()" style="background:rgba(59,130,246,0.12);color:#93c5fd;border:1px solid rgba(59,130,246,0.25);border-radius:9px;padding:7px 16px;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;">✏️ ערוך פרופיל</button>
+  </div>`;
 }
 
 

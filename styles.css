@@ -673,3 +673,53 @@ body{
 .sched-slot.active {
   background: rgba(59,130,246,.2); border-color: #3b82f6; color: #93c5fd;
 }
+
+
+/* ═══════════════════════════════════════
+   RESPONSIVE — prevent horizontal scroll
+═══════════════════════════════════════ */
+/* Ensure nothing overflows the viewport horizontally */
+.container {
+  overflow-x: hidden;
+}
+.tab-content {
+  overflow-x: hidden !important;
+}
+.filter-bar {
+  flex-wrap: wrap;
+  overflow: hidden;
+}
+.filter-bar label {
+  white-space: nowrap;
+  font-size: 12px;
+}
+.filter-bar select {
+  min-width: 100px;
+  max-width: 180px;
+}
+
+/* Tabs — allow scrolling within tab group rows on small screens */
+.tabs-grouped {
+  overflow-x: auto;
+}
+.tab-group-row {
+  flex-wrap: wrap;
+}
+
+/* Navbar — hide breadcrumb on very small screens */
+@media (max-width: 600px) {
+  #navBreadcrumb { display: none !important; }
+  .header { padding: 14px 16px; }
+  .header h1 { font-size: 16px; }
+  .container { padding: 12px; }
+  .filter-bar { padding: 10px 12px; gap: 8px; }
+  .filter-bar select { min-width: 80px; font-size: 12px; }
+  .kpi-grid { grid-template-columns: 1fr 1fr !important; }
+  .tabs-grouped .tab { font-size: 11px; padding: 6px 10px 7px; }
+  #navAdvisorBtn { display: none !important; }
+}
+
+@media (max-width: 480px) {
+  .kpi-grid { grid-template-columns: 1fr !important; }
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+}
