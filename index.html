@@ -464,37 +464,42 @@ if(typeof Chart==='undefined'){
 </div>
 
 <!-- ═══ NO-DATA EMPTY STATE OVERLAY ═══ -->
-<div id="noDataOverlay" style="display:none;position:fixed;inset:0;z-index:12000;background:rgba(2,6,23,0.96);align-items:center;justify-content:center;direction:rtl;padding:20px;">
-  <div style="text-align:center;max-width:500px;">
-    <div style="font-size:4em;margin-bottom:16px;">📂</div>
-    <h2 style="color:#f1f5f9;font-size:1.5em;margin:0 0 12px;font-weight:800;">ברוך הבא ל-FinTrack!</h2>
-    <p style="color:#94a3b8;font-size:14px;line-height:1.7;margin:0 0 28px;">
-      כדי להתחיל, יש לחבר את הקבצים הפיננסיים שלך.<br>
-      המערכת תנתח אוטומטית דפי בנק, כרטיסי אשראי ועסקאות.
+<div id="noDataOverlay" style="display:none;position:fixed;top:52px;right:0;bottom:0;left:0;z-index:9998;background:rgba(2,6,23,0.97);align-items:flex-start;justify-content:center;direction:rtl;padding:28px 20px 20px;overflow-y:auto;">
+  <div style="text-align:center;max-width:460px;width:100%;">
+    <div style="font-size:2.8em;margin-bottom:10px;">📂</div>
+    <h2 style="color:#f1f5f9;font-size:1.35em;margin:0 0 8px;font-weight:800;">ברוך הבא ל-FinTrack!</h2>
+    <p style="color:#94a3b8;font-size:13px;line-height:1.6;margin:0 0 18px;">
+      כדי להתחיל, חבר את הקבצים הפיננסיים שלך — דפי בנק וכרטיסי אשראי.
     </p>
-    <!-- Steps preview -->
-    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:32px;text-align:right;">
-      <div style="background:#0f172a;border:1px solid #1e3a5f;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:12px;">
-        <span style="font-size:1.4em;">1️⃣</span>
-        <div><div style="color:#e2e8f0;font-weight:700;font-size:13px;">בחר תיקיית קבצים</div><div style="color:#64748b;font-size:11px;">PDF / Excel / CSV של בנקים וכרטיסי אשראי</div></div>
+    <!-- Steps preview — compact 2-column grid -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px;text-align:right;">
+      <div style="background:#0f172a;border:1px solid #1e3a5f;border-radius:9px;padding:10px 12px;display:flex;align-items:center;gap:8px;">
+        <span style="font-size:1.2em;">1️⃣</span>
+        <div><div style="color:#e2e8f0;font-weight:700;font-size:12px;">בחר תיקיית קבצים</div><div style="color:#64748b;font-size:10px;">Excel / CSV</div></div>
       </div>
-      <div style="background:#0f172a;border:1px solid #1e3a5f;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:12px;">
-        <span style="font-size:1.4em;">2️⃣</span>
-        <div><div style="color:#e2e8f0;font-weight:700;font-size:13px;">אישור דפי הבנק</div><div style="color:#64748b;font-size:11px;">בדיקת יתרות, הכנסות, ותנועות מאוחדות</div></div>
+      <div style="background:#0f172a;border:1px solid #1e3a5f;border-radius:9px;padding:10px 12px;display:flex;align-items:center;gap:8px;">
+        <span style="font-size:1.2em;">2️⃣</span>
+        <div><div style="color:#e2e8f0;font-weight:700;font-size:12px;">אישור דפי הבנק</div><div style="color:#64748b;font-size:10px;">יתרות ותנועות</div></div>
       </div>
-      <div style="background:#0f172a;border:1px solid #1e3a5f;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:12px;">
-        <span style="font-size:1.4em;">3️⃣</span>
-        <div><div style="color:#e2e8f0;font-weight:700;font-size:13px;">סיווג עסקאות</div><div style="color:#64748b;font-size:11px;">אישור קטגוריות, סימון חריגים, העברה לבדיקה</div></div>
+      <div style="background:#0f172a;border:1px solid #1e3a5f;border-radius:9px;padding:10px 12px;display:flex;align-items:center;gap:8px;">
+        <span style="font-size:1.2em;">3️⃣</span>
+        <div><div style="color:#e2e8f0;font-weight:700;font-size:12px;">סיווג עסקאות</div><div style="color:#64748b;font-size:10px;">קטגוריות וחריגים</div></div>
       </div>
-      <div style="background:#0f172a;border:1px solid #1e3a5f;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:12px;">
-        <span style="font-size:1.4em;">4️⃣</span>
-        <div><div style="color:#e2e8f0;font-weight:700;font-size:13px;">דשבורד + תובנות</div><div style="color:#64748b;font-size:11px;">ניתוח מלא, גרפים, והמלצות אישיות</div></div>
+      <div style="background:#0f172a;border:1px solid #1e3a5f;border-radius:9px;padding:10px 12px;display:flex;align-items:center;gap:8px;">
+        <span style="font-size:1.2em;">4️⃣</span>
+        <div><div style="color:#e2e8f0;font-weight:700;font-size:12px;">דשבורד + תובנות</div><div style="color:#64748b;font-size:10px;">גרפים והמלצות</div></div>
       </div>
     </div>
-    <button onclick="showFolderStepIfNeeded();"
-      style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:white;border:none;border-radius:12px;padding:14px 32px;font-size:15px;font-weight:700;cursor:pointer;width:100%;max-width:300px;">
+    <button onclick="reopenFolderStep();"
+      style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:white;border:none;border-radius:11px;padding:13px 28px;font-size:15px;font-weight:700;cursor:pointer;width:100%;max-width:280px;box-shadow:0 4px 14px rgba(59,130,246,0.35);">
       📂 העלאת קבצים פיננסיים
     </button>
+    <div style="margin-top:14px;">
+      <button onclick="document.getElementById('noDataOverlay').style.display='none'"
+        style="background:none;border:none;color:#475569;font-size:12px;cursor:pointer;text-decoration:underline;font-family:inherit;">
+        כבר יש לי נתונים — עבור לדשבורד
+      </button>
+    </div>
   </div>
 </div>
 
@@ -1337,7 +1342,7 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeFlowG
 
 <!-- VERSION FOOTER -->
 <div id="versionFooter" style="position:fixed;bottom:8px;left:12px;z-index:99999;font-size:11px;color:#94a3b8;background:rgba(15,23,42,0.85);border:1px solid #1e3a5f;border-radius:6px;padding:3px 10px;font-family:monospace;pointer-events:none;backdrop-filter:blur(4px);">
-  FinTrack v1.11.0 · 2026-03-26 · Parser Fix + Dynamic Header
+  FinTrack v1.12.0 · 2026-03-29 · Auth + Overlay + Upload Fix
 </div>
 
 </body>

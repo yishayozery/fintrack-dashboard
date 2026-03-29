@@ -516,11 +516,20 @@ body{
 .wf-hint a{color:#1a56db;text-decoration:underline;cursor:pointer;}
 
 /* ===== AUTH / ONBOARDING OVERLAY ===== */
-#authScreen, #oauthSimOverlay, #folderStepOverlay {
+/* Auth + OAuth: full-screen (covers navbar) */
+#authScreen, #oauthSimOverlay {
   position: fixed; inset: 0; z-index: 99999;
   background: rgba(10,15,30,0.97);
   display: flex; align-items: center; justify-content: center;
   direction: rtl; font-family: inherit;
+}
+/* Folder step: starts BELOW the navbar so navbar stays visible */
+#folderStepOverlay {
+  position: fixed; top: 52px; right: 0; bottom: 0; left: 0;
+  z-index: 9998; /* below navbar z-index:9999 */
+  background: rgba(10,15,30,0.97);
+  display: flex; align-items: center; justify-content: center;
+  overflow-y: auto; direction: rtl; font-family: inherit;
 }
 .auth-card {
   background: #1e293b; border-radius: 18px;

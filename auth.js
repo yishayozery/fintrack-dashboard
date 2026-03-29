@@ -143,44 +143,46 @@ window.reopenFolderStep = function() {
   function checkAuthOnLoad(){
     var saved = null;
     try { saved = JSON.parse(localStorage.getItem('authUser')); } catch(e){}
-    if(saved && saved.name){
-      // Already logged in — sync to profile
+
+    // ALWAYS show auth screen — user must actively log in each session.
+    // If a returning user exists, pre-fill their email for quick access.
+    navSetStep('register');
+    var el = document.getElementById('authScreen');
+    if(el) el.style.display = 'flex';
+
+    if(saved && saved.email){
+      // Pre-fill email so the returning user just presses "המשך"
+      setTimeout(function(){
+        var emailEl = document.getElementById('authEmailInput');
+        if(emailEl && !emailEl.value){ emailEl.value = saved.email; }
+      }, 100);
+    }
+
+    // Keep the block below dead — original auto-login removed.
+    if(false && saved && saved.name){
+      // (disabled — always require explicit login)
       if(!userProfile.name) { userProfile.name = saved.name; }
       if(!userProfile.email && saved.email) { userProfile.email = saved.email; }
       updateHeaderUser();
-
       window._flowState.registered = true;
       navShowUser(saved.name);
-
-      // Show main app
       var ma = document.getElementById('mainApp');
       if(ma) ma.style.display = 'block';
-
       var fs = _getFlowStatus();
       var profileClear = fs.profileDone || fs.profileSkipped;
-
       if(!profileClear){
-        // NEW USER: profile not yet filled or skipped
         navSetStep('profile');
         setTimeout(showOnboardingProfile, 600);
-
       } else if(!fs.hasFolder){
-        // Profile done, but no folder yet
         navSetStep('files');
         setTimeout(showFolderStepIfNeeded, 600);
-
       } else {
-        // RETURNING USER: all set — straight to dashboard
         navSetStep('dashboard');
         if(typeof _checkShowNoData === 'function') _checkShowNoData();
         _showReturningBanner(saved.name);
       }
-
     } else {
-      // Not logged in — show auth screen
-      navSetStep('register');
-      var el = document.getElementById('authScreen');
-      if(el) el.style.display = 'flex';
+      // fallthrough — auth screen already shown above
     }
   }
 

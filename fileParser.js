@@ -501,10 +501,15 @@ document.addEventListener('DOMContentLoaded', function(){
     if(typeof loadSavedTransactions === 'function' && loadSavedTransactions()){
       if(typeof renderAll === 'function') renderAll();
       _updateHeaderMeta();
+      // Hide noDataOverlay if transactions exist
+      if(typeof _checkShowNoData === 'function') _checkShowNoData();
       console.log('FinTrack: restored', TRANSACTIONS.length, 'saved transactions');
     } else {
-      // No data yet — show empty state subtitle
+      // No data — show empty state
       _updateHeaderMeta();
+      var nd = document.getElementById('noDataOverlay');
+      // noDataOverlay is shown by _checkShowNoData — don't force it here,
+      // it should only show after login
     }
   }, 800);
 
