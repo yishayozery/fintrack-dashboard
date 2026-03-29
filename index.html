@@ -82,233 +82,333 @@ if(typeof Chart==='undefined'){
 <div style="height:52px;"></div>
 
 <!-- ========== AUTH SCREEN ========== -->
-<div id="authScreen" style="display:none;">
+<div id="authScreen" style="display:none;direction:rtl;overflow-y:auto;overflow-x:hidden;background:#0b1628;min-height:100vh;padding:0;margin:0;">
 
-  <!-- ═══ 2-COLUMN LAYOUT (RTL: right=form | left=vision) ═══ -->
-  <div style="display:flex;width:100%;height:calc(100vh - 52px);align-items:stretch;direction:rtl;overflow:hidden;background:#0b1628;">
-
-    <!-- ══════════════════════════════════════════
-         RIGHT: VISION + BENEFITS
-    ══════════════════════════════════════════ -->
-    <div class="auth-vision-panel" style="flex:1;min-width:0;overflow-y:auto;background:linear-gradient(160deg,#0f172a 0%,#1a2744 55%,#162032 100%);display:flex;align-items:center;justify-content:center;padding:36px 40px;position:relative;">
-      <!-- decorative blobs -->
-      <div style="position:absolute;top:-120px;right:-80px;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,0.07) 0%,transparent 70%);pointer-events:none;"></div>
-      <div style="position:absolute;bottom:-80px;left:40px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(16,185,129,0.06) 0%,transparent 70%);pointer-events:none;"></div>
-
-      <div style="max-width:480px;width:100%;">
+  <!-- ═══════════════════════════════════════════════════════════
+       HERO SECTION — full width landing page
+  ═══════════════════════════════════════════════════════════ -->
+  <div class="landing-hero">
+    <div class="landing-hero-content">
+      <!-- Left side: Marketing content -->
+      <div class="landing-hero-left">
         <!-- Logo + Brand -->
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px;">
-          <span style="font-size:1.9em;">💰</span>
-          <span style="font-size:1.45em;font-weight:900;color:#60a5fa;letter-spacing:1px;">FinTrack</span>
-          <span style="background:#1d4ed8;color:#93c5fd;font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;letter-spacing:1px;">BETA</span>
+        <div class="landing-brand">
+          <span class="landing-logo">💰</span>
+          <span class="landing-logo-text">FinTrack</span>
+          <span class="landing-beta-badge">BETA</span>
         </div>
 
-        <!-- Vision statement -->
-        <div style="margin-bottom:30px;">
-          <h1 style="color:#f1f5f9;font-size:1.65em;font-weight:900;margin:0 0 14px;line-height:1.3;">
-            שלוט בכסף שלך —<br>
-            <span style="color:#60a5fa;">במקום שהוא ישלוט בך</span>
-          </h1>
-          <p style="color:#64748b;font-size:13px;line-height:1.8;margin:0;padding-right:14px;border-right:3px solid #1e3a5f;">
-            אנחנו מאמינים שכל משפחה ישראלית מגיעה לשקיפות פיננסית מלאה — ללא תורים אצל רואה חשבון, ללא קוד, ובלי לחשוף נתונים לאף אחד.
-          </p>
+        <!-- Main headline -->
+        <h1 class="landing-headline">
+          שלוט בכסף שלך —<br>
+          <span class="landing-accent">במקום שהוא ישלוט בך</span>
+        </h1>
+
+        <!-- Subtext -->
+        <p class="landing-subtext">
+          אנחנו מאמינים שכל משפחה ישראלית מגיעה לשקיפות פיננסית מלאה — ללא תורים אצל רואה חשבון, ללא קוד, ובלי לחשוף נתונים לאף אחד.
+        </p>
+
+        <!-- 4 Benefits -->
+        <div class="landing-benefits">
+          <div class="landing-benefit-item">
+            <div class="landing-benefit-icon" style="background:linear-gradient(135deg,#1d4ed8,#3b82f6);">📊</div>
+            <div class="landing-benefit-text">
+              <div class="landing-benefit-title">ניתוח אוטומטי מלא</div>
+              <div class="landing-benefit-desc">PDF, Excel, CSV — כל הבנקים וכרטיסי האשראי הישראליים</div>
+            </div>
+          </div>
+          <div class="landing-benefit-item">
+            <div class="landing-benefit-icon" style="background:linear-gradient(135deg,#059669,#10b981);">💡</div>
+            <div class="landing-benefit-text">
+              <div class="landing-benefit-title">תובנות וחריגים</div>
+              <div class="landing-benefit-desc">המלצות חכמות, זיהוי חיובים חשודים, מעקב קטגוריות</div>
+            </div>
+          </div>
+          <div class="landing-benefit-item">
+            <div class="landing-benefit-icon" style="background:linear-gradient(135deg,#6d28d9,#8b5cf6);">🤝</div>
+            <div class="landing-benefit-text">
+              <div class="landing-benefit-title">יועץ AI אישי</div>
+              <div class="landing-benefit-desc">ניתוח מותאם למשפחה שלך, המלצות לחיסכון</div>
+            </div>
+          </div>
+          <div class="landing-benefit-item">
+            <div class="landing-benefit-icon" style="background:linear-gradient(135deg,#b45309,#f59e0b);">🔒</div>
+            <div class="landing-benefit-text">
+              <div class="landing-benefit-title">פרטיות מוחלטת</div>
+              <div class="landing-benefit-desc">הנתונים שלך נשארים אצלך בלבד — לא בשרת חיצוני</div>
+            </div>
+          </div>
         </div>
 
-        <!-- Benefits (styled cards) -->
-        <div style="display:flex;flex-direction:column;gap:10px;">
-          <div style="display:flex;align-items:flex-start;gap:13px;background:rgba(59,130,246,0.07);border:1px solid rgba(59,130,246,0.14);border-radius:11px;padding:13px 14px;">
-            <div style="width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:1em;flex-shrink:0;box-shadow:0 4px 12px rgba(59,130,246,0.25);">📊</div>
-            <div>
-              <div style="color:#e2e8f0;font-weight:700;font-size:13px;margin-bottom:2px;">ניתוח אוטומטי מלא</div>
-              <div style="color:#475569;font-size:11px;line-height:1.55;">PDF, Excel, CSV — כל הבנקים וכרטיסי האשראי, בלחיצה אחת</div>
-            </div>
+        <!-- Stats row -->
+        <div class="landing-stats">
+          <div class="landing-stat">
+            <div class="landing-stat-value">₪2,400</div>
+            <div class="landing-stat-label">חיסכון ממוצע/חודש</div>
           </div>
-          <div style="display:flex;align-items:flex-start;gap:13px;background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.14);border-radius:11px;padding:13px 14px;">
-            <div style="width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,#059669,#10b981);display:flex;align-items:center;justify-content:center;font-size:1em;flex-shrink:0;box-shadow:0 4px 12px rgba(16,185,129,0.25);">💡</div>
-            <div>
-              <div style="color:#e2e8f0;font-weight:700;font-size:13px;margin-bottom:2px;">תובנות וחריגים</div>
-              <div style="color:#475569;font-size:11px;line-height:1.55;">המלצות חכמות, זיהוי חיובים חשודים, מעקב קטגוריות</div>
-            </div>
+          <div class="landing-stat">
+            <div class="landing-stat-value">5 דק׳</div>
+            <div class="landing-stat-label">עד לדשבורד מלא</div>
           </div>
-          <div style="display:flex;align-items:flex-start;gap:13px;background:rgba(139,92,246,0.07);border:1px solid rgba(139,92,246,0.14);border-radius:11px;padding:13px 14px;">
-            <div style="width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,#6d28d9,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:1em;flex-shrink:0;box-shadow:0 4px 12px rgba(139,92,246,0.25);">🤝</div>
-            <div>
-              <div style="color:#e2e8f0;font-weight:700;font-size:13px;margin-bottom:2px;">מלווה פיננסי אישי</div>
-              <div style="color:#475569;font-size:11px;line-height:1.55;">ייעוץ מותאם לך ולמשפחתך, כולל תכנון לטווח ארוך</div>
-            </div>
-          </div>
-          <div style="display:flex;align-items:flex-start;gap:13px;background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.14);border-radius:11px;padding:13px 14px;">
-            <div style="width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,#b45309,#f59e0b);display:flex;align-items:center;justify-content:center;font-size:1em;flex-shrink:0;box-shadow:0 4px 12px rgba(245,158,11,0.25);">🔒</div>
-            <div>
-              <div style="color:#e2e8f0;font-weight:700;font-size:13px;margin-bottom:2px;">פרטיות מוחלטת</div>
-              <div style="color:#475569;font-size:11px;line-height:1.55;">הנתונים שלך נשארים אצלך בלבד — לא בשרת חיצוני</div>
-            </div>
+          <div class="landing-stat">
+            <div class="landing-stat-value">100%</div>
+            <div class="landing-stat-label">חינמי ופרטי</div>
           </div>
         </div>
+      </div>
 
-        <!-- Stats -->
-        <div style="display:flex;gap:20px;padding-top:18px;margin-top:18px;border-top:1px solid rgba(59,130,246,0.12);">
-          <div><div style="color:#60a5fa;font-size:1.25em;font-weight:900;">₪2,400</div><div style="color:#334155;font-size:10px;">חיסכון ממוצע/חודש</div></div>
-          <div><div style="color:#22c55e;font-size:1.25em;font-weight:900;">5 דק׳</div><div style="color:#334155;font-size:10px;">עד לדשבורד מלא</div></div>
-          <div><div style="color:#f59e0b;font-size:1.25em;font-weight:900;">100%</div><div style="color:#334155;font-size:10px;">חינמי ופרטי</div></div>
+      <!-- Right side: Auth form card -->
+      <div class="landing-hero-right">
+        <div class="landing-form-card">
+          <!-- Card header -->
+          <div class="landing-form-header">
+            <h2>כניסה / הרשמה</h2>
+            <p>הזן מייל — נזהה אוטומטית אם זו כניסה חוזרת או הרשמה חדשה</p>
+          </div>
+
+          <!-- Form content -->
+          <div class="landing-form-body">
+            <!-- ─── STEP 1: Email + Social ─── -->
+            <div id="authStep1">
+              <!-- Social buttons -->
+              <div class="landing-social-buttons">
+                <button class="auth-social-btn auth-google-btn" onclick="authWithGoogle()">
+                  <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.7 2.3 30.2 0 24 0 14.7 0 6.8 5.4 3 13.3l7.8 6C12.6 13.3 17.9 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17z"/><path fill="#FBBC05" d="M10.8 28.7A14.6 14.6 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.8-6A24 24 0 0 0 0 24c0 3.9.9 7.5 2.5 10.7l8.3-6z"/><path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.5l-7.5-5.8c-2 1.4-4.6 2.2-7.7 2.2-6.1 0-11.3-4-13.1-9.5l-8.3 6C6.8 42.6 14.7 48 24 48z"/></svg>
+                  <span id="googleBtnText">Google</span>
+                </button>
+                <button class="auth-social-btn auth-facebook-btn" onclick="authWithFacebook()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M24 12.07C24 5.41 18.63 0 12 0S0 5.41 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.04V9.41c0-3.02 1.8-4.7 4.54-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.95.93-1.95 1.88v2.27h3.32l-.53 3.5h-2.79V24C19.61 23.1 24 18.1 24 12.07z"/></svg>
+                  <span id="facebookBtnText">Facebook</span>
+                </button>
+              </div>
+
+              <div class="auth-divider">או המשך עם מייל</div>
+
+              <input id="authEmailInput" class="auth-input" type="email" placeholder="כתובת מייל *"
+                autocomplete="email" onkeydown="if(event.key==='Enter') checkEmailAndContinue();" />
+
+              <button id="authStep1Btn" class="auth-main-btn" onclick="checkEmailAndContinue()">
+                המשך →
+              </button>
+
+              <!-- Onboarding preview -->
+              <div id="onboardingPreview" class="landing-onboarding-preview">
+                <div class="landing-onboarding-title">3 שלבים לדשבורד מלא</div>
+                <div class="landing-onboarding-steps">
+                  <div class="landing-onboarding-step">
+                    <div class="landing-onboarding-step-number" style="background:linear-gradient(135deg,#1d4ed8,#3b82f6);">1</div>
+                    <div class="landing-onboarding-step-text"><span class="landing-onboarding-step-title">פרופיל אישי</span> — הכנסות, יעדים, בני משפחה</div>
+                  </div>
+                  <div class="landing-onboarding-step">
+                    <div class="landing-onboarding-step-number">2</div>
+                    <div class="landing-onboarding-step-text"><span class="landing-onboarding-step-title">חיבור קבצים</span> — Excel מהבנק וכרטיסי אשראי</div>
+                  </div>
+                  <div class="landing-onboarding-step">
+                    <div class="landing-onboarding-step-number">3</div>
+                    <div class="landing-onboarding-step-text"><span class="landing-onboarding-step-title">דשבורד + תובנות</span> — ניתוח, גרפים, המלצות</div>
+                  </div>
+                </div>
+                <div class="landing-onboarding-note">💬 ניתן לדלג על כל שלב ולהשלים מאוחר יותר</div>
+              </div>
+
+              <p class="auth-privacy">
+                <span>🔒</span> הנתונים שלך נשארים אצלך בלבד — לא נשלחים לשרת חיצוני.
+              </p>
+            </div>
+
+            <!-- ─── STEP 2: Password + Terms ─── -->
+            <div id="authStep2" style="display:none;">
+              <div id="authStep2Header"></div>
+
+              <!-- Email pill -->
+              <div class="landing-email-pill">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span style="color:#3b82f6;font-size:14px;">✉️</span>
+                  <span id="authEmailShown" style="color:#93c5fd;font-size:13px;font-weight:600;direction:ltr;"></span>
+                </div>
+                <button onclick="goBackToEmailStep()" style="background:none;border:none;color:#64748b;font-size:11px;cursor:pointer;text-decoration:underline;padding:0;font-family:inherit;white-space:nowrap;">שנה</button>
+              </div>
+
+              <!-- Name field (registration only) -->
+              <div id="authNameRow" style="display:none;">
+                <input id="authNameInput" class="auth-input" type="text" placeholder="שם מלא *" autocomplete="name" />
+              </div>
+
+              <!-- Password -->
+              <div style="position:relative;">
+                <input id="authPassInput" class="auth-input" type="password" placeholder="סיסמה * (לפחות 8 תווים)"
+                  autocomplete="current-password" oninput="updatePasswordStrength()" style="padding-left:45px;" />
+                <button onclick="togglePassVisibility()" type="button"
+                  style="position:absolute;left:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#94a3b8;cursor:pointer;font-size:16px;padding:0;" id="passToggleBtn">👁</button>
+              </div>
+
+              <!-- Password strength bar -->
+              <div id="passStrengthWrap" style="display:none;margin:-4px 0 10px;">
+                <div style="height:4px;background:#1e293b;border-radius:2px;overflow:hidden;margin-bottom:4px;">
+                  <div id="passStrengthBar" style="height:100%;width:0%;transition:width .3s,background .3s;border-radius:2px;"></div>
+                </div>
+                <span id="passStrengthLabel" style="font-size:11px;"></span>
+              </div>
+
+              <!-- Terms checkbox -->
+              <div id="authTermsRow" style="display:none;align-items:center;gap:10px;margin:10px 0;font-size:12px;color:#94a3b8;direction:rtl;background:#0f172a;border-radius:10px;padding:12px 14px;border:1px solid #1e3a5f;">
+                <div id="authTermsCheckVisual" style="width:22px;height:22px;border-radius:6px;border:2px solid #475569;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;cursor:pointer;" onclick="openTermsModal()"></div>
+                <span style="line-height:1.5;">קראתי ואני מסכים/ה ל<button type="button" onclick="openTermsModal()" style="background:none;border:none;color:#3b82f6;cursor:pointer;padding:0;font-size:12px;font-weight:700;text-decoration:underline;">תנאי השימוש</button>
+                  <span id="termsReadBadge" style="display:none;color:#22c55e;font-size:11px;font-weight:600;margin-right:4px;">✓ נקרא ואושר</span>
+                </span>
+              </div>
+
+              <button id="authMainBtn" class="auth-main-btn" onclick="authWithEmail()" disabled
+                style="opacity:0.45;cursor:not-allowed;margin-top:8px;">כניסה</button>
+
+              <p style="text-align:center;margin-top:10px;">
+                <button onclick="goBackToEmailStep()" style="background:none;border:none;color:#475569;cursor:pointer;font-size:11px;font-family:inherit;text-decoration:underline;">← חזרה</button>
+              </p>
+              <p class="auth-privacy">
+                <span>🔒</span> הנתונים שלך מוצפנים ומאובטחים.
+              </p>
+            </div>
+
+            <!-- Advisor section -->
+            <div class="landing-advisor-section">
+              <div class="landing-advisor-card">
+                <div class="landing-advisor-header">
+                  <div class="landing-advisor-icon">💼</div>
+                  <div>
+                    <div class="landing-advisor-title">יועץ כלכלי מקצועי?</div>
+                    <div class="landing-advisor-subtitle">כניסה לפורטל ניהול לקוחות</div>
+                  </div>
+                </div>
+                <p class="landing-advisor-desc">
+                  הפורטל מיועד ליועצים כלכליים המנהלים מספר לקוחות. מאפשר מעקב, התראות ותקשורת — נפרד מהכניסה הרגילה.
+                </p>
+                <button onclick="openAdvisorPortal()" class="landing-advisor-btn">
+                  כניסה לפורטל יועצים ←
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- ══════════════════════════════════════════
-         CENTER: FORM (the CTA)
-    ══════════════════════════════════════════ -->
-    <!-- ══════════════════════════════════════════
-         RIGHT (RTL): FORM PANEL — wider, branded
-    ══════════════════════════════════════════ -->
-    <div class="auth-form-panel" style="width:480px;flex-shrink:0;display:flex;flex-direction:column;background:#0c1524;border-right:1px solid #1e3a5f;border-left:1px solid #1e3a5f;overflow:hidden;box-shadow:0 0 60px rgba(0,0,0,0.6);">
+    <!-- Decorative blobs -->
+    <div style="position:absolute;top:-120px;right:-80px;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,0.07) 0%,transparent 70%);pointer-events:none;z-index:0;"></div>
+    <div style="position:absolute;bottom:-80px;left:40px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(16,185,129,0.06) 0%,transparent 70%);pointer-events:none;z-index:0;"></div>
+  </div>
 
-      <!-- Gradient brand header -->
-      <div style="background:linear-gradient(135deg,#1e3a5f 0%,#1d4ed8 100%);padding:22px 28px 18px;flex-shrink:0;">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-          <span style="font-size:1.6em;">💰</span>
-          <span style="font-size:1.2em;font-weight:900;color:#fff;letter-spacing:1px;">FinTrack</span>
-          <span style="background:rgba(255,255,255,0.15);color:#bfdbfe;font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:1px;">BETA</span>
+  <!-- ═══════════════════════════════════════════════════════════
+       PLATFORM FEATURES SECTION
+  ═══════════════════════════════════════════════════════════ -->
+  <div class="landing-features-section">
+    <div class="landing-container">
+      <h2 class="landing-section-title">הפלטפורמה — מה תקבל ב-FinTrack</h2>
+      <div class="landing-features-grid">
+        <div class="landing-feature-card">
+          <div class="landing-feature-icon">📊</div>
+          <h3 class="landing-feature-title">ניתוח מלא</h3>
+          <p class="landing-feature-desc">כל הבנקים וכרטיסי האשראי הישראליים בממשק אחיד וקל</p>
         </div>
-        <div style="color:#bfdbfe;font-size:12px;line-height:1.5;">שקיפות פיננסית מלאה — ללא רואה חשבון, ללא קוד</div>
-      </div>
-
-      <!-- Form content -->
-      <div style="padding:24px 28px;overflow-y:auto;flex:1;font-size:15px;">
-
-        <!-- ─── STEP 1: Email + Social ─── -->
-        <div id="authStep1">
-          <h2 style="color:#f1f5f9;font-size:1.15em;font-weight:800;margin:0 0 4px;">כניסה / הרשמה</h2>
-          <p style="color:#475569;font-size:12px;margin:0 0 18px;line-height:1.6;">הזן מייל — נזהה אוטומטית אם זו כניסה חוזרת או הרשמה חדשה</p>
-
-          <!-- Social buttons side by side -->
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
-            <button class="auth-social-btn auth-google-btn" onclick="authWithGoogle()" style="margin:0;padding:10px 8px;font-size:13px;">
-              <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.7 2.3 30.2 0 24 0 14.7 0 6.8 5.4 3 13.3l7.8 6C12.6 13.3 17.9 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17z"/><path fill="#FBBC05" d="M10.8 28.7A14.6 14.6 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.8-6A24 24 0 0 0 0 24c0 3.9.9 7.5 2.5 10.7l8.3-6z"/><path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.5l-7.5-5.8c-2 1.4-4.6 2.2-7.7 2.2-6.1 0-11.3-4-13.1-9.5l-8.3 6C6.8 42.6 14.7 48 24 48z"/></svg>
-              <span id="googleBtnText">Google</span>
-            </button>
-            <button class="auth-social-btn auth-facebook-btn" onclick="authWithFacebook()" style="margin:0;padding:10px 8px;font-size:13px;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M24 12.07C24 5.41 18.63 0 12 0S0 5.41 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.04V9.41c0-3.02 1.8-4.7 4.54-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.95.93-1.95 1.88v2.27h3.32l-.53 3.5h-2.79V24C19.61 23.1 24 18.1 24 12.07z"/></svg>
-              <span id="facebookBtnText">Facebook</span>
-            </button>
-          </div>
-
-          <div class="auth-divider">או המשך עם מייל</div>
-
-          <input id="authEmailInput" class="auth-input" type="email" placeholder="כתובת מייל *"
-            autocomplete="email" onkeydown="if(event.key==='Enter') checkEmailAndContinue();" />
-
-          <button id="authStep1Btn" class="auth-main-btn" onclick="checkEmailAndContinue()" style="margin-top:8px;">
-            המשך →
-          </button>
-
-          <!-- Onboarding steps preview — what happens after signup -->
-          <div id="onboardingPreview" style="margin-top:16px;background:#0f172a;border:1px solid #1e3a5f;border-radius:12px;padding:14px 16px;">
-            <div style="color:#3b82f6;font-size:10px;font-weight:700;margin-bottom:10px;text-transform:uppercase;letter-spacing:.8px;">3 שלבים לדשבורד מלא</div>
-            <div style="display:flex;flex-direction:column;gap:10px;">
-              <div style="display:flex;align-items:center;gap:12px;">
-                <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#1d4ed8,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0;">1</div>
-                <div style="font-size:12px;color:#94a3b8;line-height:1.4;"><span style="color:#e2e8f0;font-weight:600;">פרופיל אישי</span> — הכנסות, יעדים, בני משפחה</div>
-              </div>
-              <div style="display:flex;align-items:center;gap:12px;">
-                <div style="width:28px;height:28px;border-radius:50%;background:#1e293b;border:2px solid #334155;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#475569;flex-shrink:0;">2</div>
-                <div style="font-size:12px;color:#94a3b8;line-height:1.4;"><span style="color:#e2e8f0;font-weight:600;">חיבור קבצים</span> — Excel מהבנק וכרטיסי אשראי ישראליים</div>
-              </div>
-              <div style="display:flex;align-items:center;gap:12px;">
-                <div style="width:28px;height:28px;border-radius:50%;background:#1e293b;border:2px solid #334155;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#475569;flex-shrink:0;">3</div>
-                <div style="font-size:12px;color:#94a3b8;line-height:1.4;"><span style="color:#e2e8f0;font-weight:600;">דשבורד + תובנות</span> — ניתוח, גרפים, המלצות חכמות</div>
-              </div>
-            </div>
-            <div style="margin-top:10px;padding-top:10px;border-top:1px solid #1e2d3d;color:#334155;font-size:10px;">💬 ניתן לדלג על כל שלב ולהשלים מאוחר יותר</div>
-          </div>
-
-          <p class="auth-privacy" style="margin-top:12px;font-size:11px;">
-            <span>🔒</span> הנתונים שלך נשארים אצלך בלבד — לא נשלחים לשרת חיצוני.
-          </p>
+        <div class="landing-feature-card">
+          <div class="landing-feature-icon">📅</div>
+          <h3 class="landing-feature-title">מעקב חודשי</h3>
+          <p class="landing-feature-desc">תקציב, מגמות, השוואת חודשים, וזיהוי חריגים</p>
         </div>
-
-        <!-- ─── STEP 2: Password + Terms ─── -->
-        <div id="authStep2" style="display:none;">
-          <div id="authStep2Header" style="margin-bottom:14px;"></div>
-
-          <!-- Email pill with change option -->
-          <div style="display:flex;align-items:center;justify-content:space-between;background:#1e293b;border:1px solid #334155;border-radius:10px;padding:10px 14px;margin-bottom:12px;">
-            <div style="display:flex;align-items:center;gap:8px;">
-              <span style="color:#3b82f6;font-size:14px;">✉️</span>
-              <span id="authEmailShown" style="color:#93c5fd;font-size:13px;font-weight:600;direction:ltr;"></span>
-            </div>
-            <button onclick="goBackToEmailStep()" style="background:none;border:none;color:#64748b;font-size:11px;cursor:pointer;text-decoration:underline;padding:0;font-family:inherit;white-space:nowrap;">שנה</button>
-          </div>
-
-          <!-- Name field (registration only) -->
-          <div id="authNameRow" style="display:none;">
-            <input id="authNameInput" class="auth-input" type="text" placeholder="שם מלא *" autocomplete="name" />
-          </div>
-
-          <!-- Password -->
-          <div style="position:relative;">
-            <input id="authPassInput" class="auth-input" type="password" placeholder="סיסמה * (לפחות 8 תווים)"
-              autocomplete="current-password" oninput="updatePasswordStrength()" style="padding-left:45px;" />
-            <button onclick="togglePassVisibility()" type="button"
-              style="position:absolute;left:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#94a3b8;cursor:pointer;font-size:16px;padding:0;" id="passToggleBtn">👁</button>
-          </div>
-
-          <!-- Password strength bar -->
-          <div id="passStrengthWrap" style="display:none;margin:-4px 0 10px;">
-            <div style="height:4px;background:#1e293b;border-radius:2px;overflow:hidden;margin-bottom:4px;">
-              <div id="passStrengthBar" style="height:100%;width:0%;transition:width .3s,background .3s;border-radius:2px;"></div>
-            </div>
-            <span id="passStrengthLabel" style="font-size:11px;"></span>
-          </div>
-
-          <!-- Terms checkbox (registration only) -->
-          <div id="authTermsRow" style="display:none;align-items:center;gap:10px;margin:10px 0;font-size:12px;color:#94a3b8;direction:rtl;background:#0f172a;border-radius:10px;padding:12px 14px;border:1px solid #1e3a5f;">
-            <div id="authTermsCheckVisual" style="width:22px;height:22px;border-radius:6px;border:2px solid #475569;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;cursor:pointer;" onclick="openTermsModal()"></div>
-            <span style="line-height:1.5;">קראתי ואני מסכים/ה ל<button type="button" onclick="openTermsModal()" style="background:none;border:none;color:#3b82f6;cursor:pointer;padding:0;font-size:12px;font-weight:700;text-decoration:underline;">תנאי השימוש</button>
-              <span id="termsReadBadge" style="display:none;color:#22c55e;font-size:11px;font-weight:600;margin-right:4px;">✓ נקרא ואושר</span>
-            </span>
-          </div>
-
-          <button id="authMainBtn" class="auth-main-btn" onclick="authWithEmail()" disabled
-            style="opacity:0.45;cursor:not-allowed;margin-top:8px;">כניסה</button>
-
-          <p style="text-align:center;margin-top:10px;">
-            <button onclick="goBackToEmailStep()" style="background:none;border:none;color:#475569;cursor:pointer;font-size:11px;font-family:inherit;text-decoration:underline;">← חזרה</button>
-          </p>
-          <p class="auth-privacy" style="margin-top:8px;font-size:11px;">
-            <span>🔒</span> הנתונים שלך מוצפנים ומאובטחים.
-          </p>
+        <div class="landing-feature-card">
+          <div class="landing-feature-icon">🏷️</div>
+          <h3 class="landing-feature-title">קטגוריות חכמות</h3>
+          <p class="landing-feature-desc">מיון אוטומטי חזק + אפשרות לעריכה ידנית מלאה</p>
         </div>
-
-        <!-- ─── ADVISOR PORTAL SECTION ─── -->
-        <div style="margin-top:20px;padding-top:16px;border-top:1px solid #1e2d45;">
-          <div style="background:linear-gradient(135deg,rgba(99,102,241,0.08),rgba(139,92,246,0.08));border:1px solid rgba(99,102,241,0.2);border-radius:12px;padding:14px 16px;">
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-              <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#4f46e5,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">💼</div>
-              <div>
-                <div style="color:#c4b5fd;font-weight:700;font-size:13px;">יועץ כלכלי מקצועי?</div>
-                <div style="color:#475569;font-size:11px;">כניסה לפורטל ניהול לקוחות</div>
-              </div>
-            </div>
-            <p style="color:#475569;font-size:11px;line-height:1.55;margin:0 0 10px;">
-              הפורטל מיועד ליועצים כלכליים המנהלים מספר לקוחות. מאפשר מעקב, התראות ותקשורת — נפרד מהכניסה הרגילה.
-            </p>
-            <button onclick="openAdvisorPortal()" style="width:100%;background:rgba(99,102,241,0.15);color:#a5b4fc;border:1px solid rgba(99,102,241,0.3);border-radius:9px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;" onmouseover="this.style.background='rgba(99,102,241,0.25)'" onmouseout="this.style.background='rgba(99,102,241,0.15)'">
-              כניסה לפורטל יועצים ←
-            </button>
-          </div>
+        <div class="landing-feature-card">
+          <div class="landing-feature-icon">⚠️</div>
+          <h3 class="landing-feature-title">חריגים ואזהרות</h3>
+          <p class="landing-feature-desc">זיהוי חיובים חשודים, הוצאות אנומליות, וחיובים שחזרו</p>
         </div>
-
       </div>
     </div>
+  </div>
 
+  <!-- ═══════════════════════════════════════════════════════════
+       HOW IT WORKS SECTION
+  ═══════════════════════════════════════════════════════════ -->
+  <div class="landing-how-section">
+    <div class="landing-container">
+      <h2 class="landing-section-title">איך זה עובד</h2>
+      <div class="landing-how-steps">
+        <div class="landing-how-step">
+          <div class="landing-how-step-number">1</div>
+          <h3>הירשם / היכנס</h3>
+          <p>30 שניות עם מייל או Google</p>
+        </div>
+        <div class="landing-how-connector"></div>
+        <div class="landing-how-step">
+          <div class="landing-how-step-number">2</div>
+          <h3>חבר קבצים</h3>
+          <p>ייצוא Excel מהבנק וכרטיסי אשראי</p>
+        </div>
+        <div class="landing-how-connector"></div>
+        <div class="landing-how-step">
+          <div class="landing-how-step-number">3</div>
+          <h3>קבל תובנות</h3>
+          <p>דשבורד מלא, גרפים, המלצות</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       CONTACT & FOOTER SECTION
+  ═══════════════════════════════════════════════════════════ -->
+  <div class="landing-contact-section">
+    <div class="landing-container">
+      <h2 class="landing-section-title">צור קשר</h2>
+      <div class="landing-contact-info">
+        <div class="landing-contact-item">
+          <span class="landing-contact-icon">📧</span>
+          <div>
+            <div class="landing-contact-label">אימייל</div>
+            <div class="landing-contact-value">support@fintrack.co.il</div>
+          </div>
+        </div>
+        <div class="landing-contact-item">
+          <span class="landing-contact-icon">💬</span>
+          <div>
+            <div class="landing-contact-label">WhatsApp</div>
+            <div class="landing-contact-value">050-000-0000</div>
+          </div>
+        </div>
+        <div class="landing-contact-item">
+          <span class="landing-contact-icon">🏢</span>
+          <div>
+            <div class="landing-contact-label">הכתובת</div>
+            <div class="landing-contact-value">FinTrack — ישראל</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="landing-footer">
+    <div class="landing-container">
+      <div class="landing-footer-content">
+        <span>© 2026 FinTrack · כל הזכויות שמורות</span>
+        <span> | </span>
+        <button type="button" onclick="openTermsModal()" style="background:none;border:none;color:#94a3b8;cursor:pointer;padding:0;font-family:inherit;text-decoration:underline;">תנאי שימוש</button>
+        <span> | </span>
+        <span>פרטיות</span>
+      </div>
+    </div>
   </div>
 
   <!-- Email verify step — kept hidden -->
   <div id="emailVerifyStep" style="display:none;">
     <input id="verifyCodeInput" type="hidden" /><span id="verifyEmailDisplay"></span><span id="verifyCodeNote"></span>
   </div>
+
 </div>
+
 <!-- ========== OAUTH SIMULATION OVERLAY ========== -->
 <div id="oauthSimOverlay" style="display:none;">
   <div class="oauth-sim-card">
@@ -1298,7 +1398,7 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeFlowG
 
 <!-- VERSION FOOTER -->
 <div id="versionFooter" style="position:fixed;bottom:8px;left:12px;z-index:99999;font-size:11px;color:#94a3b8;background:rgba(15,23,42,0.85);border:1px solid #1e3a5f;border-radius:6px;padding:3px 10px;font-family:monospace;pointer-events:none;backdrop-filter:blur(4px);">
-  FinTrack v1.14.0 · 2026-03-29 · Auth Redesign + File Detection Fix
+  FinTrack v1.15.0 · 2026-03-29 · Landing Page Redesign
 </div>
 
 </body>
