@@ -516,8 +516,15 @@ body{
 .wf-hint a{color:#1a56db;text-decoration:underline;cursor:pointer;}
 
 /* ===== AUTH / ONBOARDING OVERLAY ===== */
-/* Auth + OAuth: full-screen (covers navbar) */
-#authScreen, #oauthSimOverlay {
+/* Auth screen: full-screen scrollable page (covers navbar) */
+#authScreen {
+  position: fixed; inset: 0; z-index: 99999;
+  background: #0b1628;
+  overflow-y: auto; overflow-x: hidden;
+  direction: rtl; font-family: inherit;
+}
+/* OAuth overlay: centered modal over everything */
+#oauthSimOverlay {
   position: fixed; inset: 0; z-index: 99999;
   background: rgba(10,15,30,0.97);
   display: flex; align-items: center; justify-content: center;

@@ -148,7 +148,7 @@ window.reopenFolderStep = function() {
     // If a returning user exists, pre-fill their email for quick access.
     navSetStep('register');
     var el = document.getElementById('authScreen');
-    if(el) el.style.display = 'flex';
+    if(el) el.style.display = 'block';
 
     if(saved && saved.email){
       // Pre-fill email so the returning user just presses "המשך"
