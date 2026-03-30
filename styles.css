@@ -519,7 +519,7 @@ body{
 /* Auth screen: full-screen scrollable page (covers navbar) */
 #authScreen {
   position: fixed; inset: 0; z-index: 99999;
-  background: #0b1628;
+  background: #18243e;
   overflow-y: auto; overflow-x: hidden;
   direction: rtl; font-family: inherit;
 }
@@ -1431,8 +1431,8 @@ body{
   align-items: center; justify-content: center;
   padding: 72px 20px 40px;
   gap: 22px; position: relative;
-  /* subtle radial glow */
-  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(59,130,246,0.07) 0%, transparent 70%);
+  /* subtle radial glow on lighter base */
+  background: radial-gradient(ellipse 80% 55% at 50% 0%, rgba(59,130,246,0.10) 0%, transparent 65%);
 }
 
 /* ── Headline block ── */
@@ -1472,8 +1472,8 @@ body{
 /* ── Registration form card ── */
 .lp-form-card {
   width: 100%; max-width: 430px;
-  background: #151f36;
-  border: 1px solid #243558;
+  background: #1e2d4a;
+  border: 1px solid #2d4570;
   border-radius: 20px; padding: 28px 28px 20px;
   box-shadow: 0 24px 60px rgba(0,0,0,0.45),
               0 0 0 1px rgba(59,130,246,0.05);
@@ -1543,7 +1543,7 @@ body{
   padding: 64px 20px;
   border-top: 1px solid rgba(255,255,255,0.05);
 }
-.lp-section-alt { background: rgba(255,255,255,0.016); }
+.lp-section-alt { background: rgba(255,255,255,0.03); }
 .lp-container { max-width: 960px; margin: 0 auto; }
 .lp-section-title {
   font-size: 2rem; font-weight: 800; color: #f1f5f9;
@@ -1609,7 +1609,7 @@ body{
 /* ── Footer ── */
 .lp-footer {
   border-top: 1px solid rgba(255,255,255,0.05);
-  padding: 22px 20px; background: #060d1a;
+  padding: 22px 20px; background: #111d33;
 }
 .lp-footer-row {
   display: flex; justify-content: center; align-items: center;
