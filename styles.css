@@ -1395,3 +1395,253 @@ body{
   }
 }
 
+/* ============================================================
+   LP — FLAT LANDING PAGE v2  (lp-* classes)
+   ============================================================ */
+
+/* ── Inner navbar ── */
+.lp-nav {
+  position: absolute; top: 0; right: 0; left: 0;
+  height: 56px; display: flex; align-items: center;
+  justify-content: space-between; padding: 0 36px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  z-index: 10;
+}
+.lp-nav-brand { display: flex; align-items: center; gap: 9px; }
+.lp-nav-title {
+  font-size: 19px; font-weight: 800; color: #60a5fa;
+  letter-spacing: 1px;
+}
+.lp-nav-beta {
+  font-size: 10px; font-weight: 700; color: #3b82f6;
+  background: rgba(59,130,246,.15); border: 1px solid rgba(59,130,246,.3);
+  border-radius: 4px; padding: 1px 6px;
+}
+.lp-nav-links { display: flex; gap: 28px; }
+.lp-nav-link {
+  color: #64748b; font-size: 14px; cursor: pointer;
+  text-decoration: none; transition: color .2s; user-select: none;
+}
+.lp-nav-link:hover { color: #cbd5e1; }
+
+/* ── Above-fold wrapper ── */
+.lp-above-fold {
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 72px 20px 40px;
+  gap: 22px; position: relative;
+  /* subtle radial glow */
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(59,130,246,0.07) 0%, transparent 70%);
+}
+
+/* ── Headline block ── */
+.lp-headline-block { text-align: center; }
+.lp-h1 {
+  font-size: 3.4rem; font-weight: 900;
+  color: #f8fafc; line-height: 1.1;
+  letter-spacing: -1.5px; margin: 0 0 10px;
+  text-shadow: 0 2px 20px rgba(59,130,246,0.15);
+}
+.lp-tagline {
+  font-size: 1.05rem; color: #94a3b8;
+  line-height: 1.6; margin: 0; max-width: 460px;
+  font-weight: 400;
+}
+
+/* ── 4 feature pills ── */
+.lp-feats-strip {
+  display: flex; flex-wrap: wrap;
+  justify-content: center; gap: 10px;
+}
+.lp-feat-pill {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 100px; padding: 9px 20px;
+  font-size: 14px; font-weight: 600; color: #cbd5e1;
+  white-space: nowrap; transition: background .2s, border-color .2s;
+  cursor: default;
+}
+.lp-feat-pill:hover {
+  background: rgba(255,255,255,0.07);
+  border-color: rgba(59,130,246,.35);
+}
+.lp-feat-ico { font-size: 16px; }
+
+/* ── Registration form card ── */
+.lp-form-card {
+  width: 100%; max-width: 430px;
+  background: #151f36;
+  border: 1px solid #243558;
+  border-radius: 20px; padding: 28px 28px 20px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.45),
+              0 0 0 1px rgba(59,130,246,0.05);
+}
+.lp-form-header { text-align: center; margin-bottom: 18px; }
+.lp-form-title {
+  font-size: 1.2rem; font-weight: 800; color: #f1f5f9; margin: 0 0 5px;
+}
+.lp-form-sub { font-size: 0.83rem; color: #64748b; margin: 0; }
+
+/* ── Compact onboarding mini strip ── */
+.lp-onb-mini {
+  display: flex; align-items: center; gap: 7px;
+  flex-wrap: wrap; justify-content: center;
+  background: rgba(59,130,246,0.06);
+  border: 1px solid rgba(59,130,246,0.13);
+  border-radius: 10px; padding: 9px 14px;
+  margin: 12px 0 4px;
+}
+.lp-onb-mini-label {
+  font-size: 11px; font-weight: 700; color: #475569;
+  margin-left: 4px;
+}
+.lp-onb-mini-step {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 12px; color: #94a3b8; font-weight: 600;
+}
+.lp-onb-mini-num {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: #334155; color: #e2e8f0; font-size: 10px;
+  font-weight: 800; display: flex; align-items: center;
+  justify-content: center; flex-shrink: 0;
+}
+.lp-onb-mini-arrow { color: #334155; font-size: 15px; }
+
+/* ── Advisor portal mini link ── */
+.lp-advisor-mini {
+  text-align: center; margin-top: 14px;
+  padding-top: 12px; border-top: 1px solid #1e2d45;
+}
+.lp-advisor-mini-btn {
+  background: none; border: none; color: #475569;
+  cursor: pointer; font-size: 12px; font-family: inherit;
+  text-decoration: underline; padding: 0; transition: color .2s;
+}
+.lp-advisor-mini-btn:hover { color: #94a3b8; }
+
+/* ── Scroll hint ── */
+.lp-scroll-hint {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 4px; color: #334155; font-size: 12px; cursor: pointer;
+  transition: color .2s; user-select: none;
+  position: absolute; bottom: 18px;
+}
+.lp-scroll-hint:hover { color: #64748b; }
+.lp-scroll-arrow {
+  font-size: 20px;
+  animation: lp-bounce .9s ease-in-out infinite alternate;
+}
+@keyframes lp-bounce {
+  from { transform: translateY(0); }
+  to   { transform: translateY(5px); }
+}
+
+/* ── Shared section styles ── */
+.lp-section {
+  padding: 64px 20px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+.lp-section-alt { background: rgba(255,255,255,0.016); }
+.lp-container { max-width: 960px; margin: 0 auto; }
+.lp-section-title {
+  font-size: 2rem; font-weight: 800; color: #f1f5f9;
+  text-align: center; margin: 0 0 6px;
+}
+.lp-section-sub {
+  text-align: center; color: #64748b; font-size: 0.95rem;
+  margin: 0 0 36px;
+}
+
+/* ── 4-card platform grid ── */
+.lp-grid-4 {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px;
+}
+.lp-card {
+  background: #1e293b; border: 1px solid #334155;
+  border-radius: 14px; padding: 26px 20px; text-align: center;
+  transition: transform .2s, box-shadow .2s, border-color .2s;
+}
+.lp-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.3);
+  border-color: #3b5282;
+}
+.lp-card-ico { font-size: 2.2rem; margin-bottom: 12px; }
+.lp-card-title { font-size: 1rem; font-weight: 700; color: #e2e8f0; margin: 0 0 8px; }
+.lp-card-text { font-size: 0.85rem; color: #64748b; line-height: 1.5; margin: 0; }
+
+/* ── How it works row ── */
+.lp-how-row {
+  display: flex; align-items: center; justify-content: center;
+  gap: 18px; flex-wrap: wrap;
+}
+.lp-how-step {
+  text-align: center; width: 190px;
+  background: #1e293b; border: 1px solid #334155;
+  border-radius: 14px; padding: 26px 18px;
+}
+.lp-how-num {
+  width: 46px; height: 46px; border-radius: 50%;
+  background: linear-gradient(135deg,#1d4ed8,#3b82f6);
+  color: white; font-size: 1.3rem; font-weight: 900;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 14px;
+}
+.lp-how-title { font-size: 1rem; font-weight: 700; color: #e2e8f0; margin: 0 0 6px; }
+.lp-how-desc  { font-size: 0.84rem; color: #64748b; margin: 0; line-height: 1.4; }
+.lp-how-arrow { font-size: 2rem; color: #334155; flex-shrink: 0; }
+
+/* ── Contact row ── */
+.lp-contact-row {
+  display: flex; justify-content: center; gap: 24px; flex-wrap: wrap;
+}
+.lp-contact-item {
+  display: flex; align-items: center; gap: 14px;
+  background: #1e293b; border: 1px solid #334155;
+  border-radius: 12px; padding: 20px 26px; min-width: 200px;
+}
+.lp-contact-ico  { font-size: 1.7rem; }
+.lp-contact-lbl  { font-size: 12px; color: #64748b; margin-bottom: 3px; }
+.lp-contact-val  { font-size: 14px; font-weight: 700; color: #e2e8f0; }
+
+/* ── Footer ── */
+.lp-footer {
+  border-top: 1px solid rgba(255,255,255,0.05);
+  padding: 22px 20px; background: #060d1a;
+}
+.lp-footer-row {
+  display: flex; justify-content: center; align-items: center;
+  gap: 12px; color: #475569; font-size: 12px; flex-wrap: wrap;
+}
+.lp-footer-sep  { color: #1e293b; }
+.lp-footer-link {
+  background: none; border: none; color: #475569; cursor: pointer;
+  font-size: 12px; font-family: inherit; text-decoration: underline; padding: 0;
+}
+.lp-footer-link:hover { color: #94a3b8; }
+
+/* ── Mobile / responsive ── */
+@media (max-width: 700px) {
+  .lp-h1        { font-size: 2.3rem; letter-spacing: -0.8px; }
+  .lp-tagline   { font-size: 0.95rem; }
+  .lp-nav       { padding: 0 16px; }
+  .lp-nav-links { gap: 16px; }
+  .lp-nav-link  { font-size: 12px; }
+  .lp-above-fold { padding: 68px 14px 36px; gap: 18px; }
+  .lp-feats-strip { gap: 8px; }
+  .lp-feat-pill { font-size: 13px; padding: 7px 14px; }
+  .lp-form-card { padding: 22px 18px 16px; }
+  .lp-grid-4    { grid-template-columns: repeat(2, 1fr); }
+  .lp-how-row   { flex-direction: column; align-items: center; }
+  .lp-how-arrow { transform: rotate(90deg); font-size: 1.4rem; }
+}
+@media (max-width: 420px) {
+  .lp-h1     { font-size: 1.9rem; }
+  .lp-grid-4 { grid-template-columns: 1fr; }
+  .lp-feats-strip { flex-direction: column; align-items: stretch; }
+  .lp-feat-pill { justify-content: center; }
+  .lp-nav-links { display: none; }
+}
+
