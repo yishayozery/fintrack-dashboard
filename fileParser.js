@@ -30,16 +30,25 @@ window.handleFolderPick = function(input){
     if(typeof _saveSettings === 'function') _saveSettings();
   }catch(e){ console.warn('FinTrack: _appSettings not accessible', e); }
 
+  // ── Filter: accept all spreadsheet formats SheetJS can read ──
   var supported = files.filter(function(f){
-    return /\.(xlsx|xls|csv)$/i.test(f.name);
+    return /\.(xlsx|xlsb|xlsm|xls|csv|ods)$/i.test(f.name);
   });
 
+  // Diagnostic: log all files seen vs accepted (helps debug missing files)
+  console.log('[FinTrack] כל הקבצים בתיקייה (' + files.length + '):', files.map(function(f){ return f.name; }));
+  console.log('[FinTrack] קבצים מקובלים לפרסור (' + supported.length + '):', supported.map(function(f){ return f.name; }));
+
   if(supported.length === 0){
-    _showToast('⚠️ לא נמצאו קבצי Excel/CSV בתיקייה. בדוק סוגי קבצים.');
+    var allExts = files.map(function(f){
+      var m = f.name.match(/\.([^.]+)$/);
+      return m ? m[1].toLowerCase() : '(ללא סיומת)';
+    }).filter(function(v,i,a){ return a.indexOf(v)===i; }).join(', ');
+    _showToast('⚠️ לא נמצאו קבצי Excel בתיקייה. סיומות שנמצאו: ' + (allExts || 'אין') + '. נדרש: xlsx/xls/csv');
     return;
   }
 
-  _showToast('⏳ טוען ' + supported.length + ' קבצים...');
+  _showToast('⏳ טוען ' + supported.length + ' קבצים מתוך ' + files.length + ' בתיקייה...');
 
   // Show loading progress bar in folder overlay
   var pb = document.getElementById('procBar');

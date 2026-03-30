@@ -2151,20 +2151,9 @@ function toggleProviderAcc(id){
   renderManagementTab();
 }
 
-function handleFolderPick(input){
-  if(input.files && input.files.length > 0){
-    // Extract folder path from first file
-    const fullPath = input.files[0].webkitRelativePath || '';
-    const folder = fullPath.split('/')[0];
-    const inp = document.getElementById('settings-folder-path');
-    if(inp) inp.value = folder;
-    _appSettings.folderPath = folder;
-    _appSettings.fileCount = input.files.length;
-    _saveSettings();
-    renderManagementTab();
-    showToast('✅ נמצאו ' + input.files.length + ' קבצים בתיקייה: ' + folder);
-  }
-}
+// handleFolderPick is defined in fileParser.js (window.handleFolderPick)
+// — it filters by extension, reads & parses all Excel/CSV files, then calls _finalizeLoad.
+// The old stub that was here has been removed to avoid overriding the parser version.
 
 function saveFolderPath(){
   const inp = document.getElementById('settings-folder-path');
