@@ -421,12 +421,28 @@ function _parseDiners(rows, headerRow, filename){
 function _parseBankStatement(rows, headerRow, filename){
   var txns = [];
   var hdrs   = rows[headerRow].map(_norm);
-  var iDate  = _colIdx(hdrs, ['תאריך','date']);
-  var iDesc  = _colIdx(hdrs, ['תיאור','פרטים','description','בית עסק','תנועה']);
+  var iDate  = _colIdx(hdrs, ['תאריך','תאריך ערך','date']);
+  var iDesc  = _colIdx(hdrs, ['תיאור','פרטים','פרטי התנועה','תיאור התנועה','פירוט','תנועה','description','בית עסק','אסמכתא']);
   var iDebit = _colIdx(hdrs, ['חובה','הוצאה','debit']);
   var iCredit= _colIdx(hdrs, ['זכות','הכנסה','credit']);
 
-  if(iDate < 0 || iDesc < 0) return [];
+  console.log('[FinTrack] BankStatement headers:', hdrs, '| iDate='+iDate+' iDesc='+iDesc+' iDebit='+iDebit+' iCredit='+iCredit);
+
+  // Fallback: if description column not found by name, use first non-empty text column
+  if(iDesc < 0){
+    for(var ci = 0; ci < hdrs.length; ci++){
+      if(ci !== iDate && ci !== iDebit && ci !== iCredit && hdrs[ci].length > 0){
+        iDesc = ci;
+        console.log('[FinTrack] BankStatement: desc fallback to column', ci, '("'+hdrs[ci]+'")');
+        break;
+      }
+    }
+  }
+
+  if(iDate < 0 || iDesc < 0){
+    console.warn('[FinTrack] BankStatement: חסרות עמודות חיוניות — תאריך או תיאור. headers:', hdrs);
+    return [];
+  }
 
   for(var i = headerRow + 1; i < rows.length; i++){
     var row     = rows[i];
@@ -435,16 +451,23 @@ function _parseBankStatement(rows, headerRow, filename){
     var debit   = iDebit  >= 0 ? parseFloat(_norm(row[iDebit]).replace(/[₪,\s]/g,''))  : NaN;
     var credit  = iCredit >= 0 ? parseFloat(_norm(row[iCredit]).replace(/[₪,\s]/g,'')) : NaN;
 
-    if(!dateRaw || !name || name.length < 2) continue;
+    if(!dateRaw || !name || name.length < 2){
+      if(i < headerRow + 5) console.log('[FinTrack] BankStatement row', i, 'skipped — dateRaw:', dateRaw, 'name:', name);
+      continue;
+    }
 
     var date = _parseDate(dateRaw);
-    if(!date) continue;
+    if(!date){
+      if(i < headerRow + 5) console.log('[FinTrack] BankStatement row', i, 'date parse failed for:', dateRaw);
+      continue;
+    }
 
     if(!isNaN(debit) && debit > 0)
       txns.push({ date:date, name:name, amount:debit, card:'בנק', chargeType:'משתנה', category:'', source:'Bank' });
     if(!isNaN(credit) && credit > 0)
       txns.push({ date:date, name:name+' (הכנסה)', amount:credit, card:'בנק', chargeType:'משתנה', category:'הכנסה', source:'Bank' });
   }
+  console.log('[FinTrack] BankStatement', filename, '→', txns.length, 'עסקאות');
   return txns;
 }
 
