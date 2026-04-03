@@ -138,7 +138,7 @@ function fmtShort(n){if(n>=1000)return '₪'+(n/1000).toFixed(1)+'K';return '₪
 function pct(a,b){if(!b)return '—';return ((a-b)/b*100).toFixed(0)+'%';}
 function pctNum(a,b){if(!b)return 0;return (a-b)/b*100;}
 
-function getEffectiveCat(tx){return catOverrides[tx.id]||tx.cat;}
+function getEffectiveCat(tx){return catOverrides[tx.id]||tx.cat||'אחר';}
 
 function getFiltered(){
   const m=document.getElementById('filterMonth')?.value||'all';
@@ -3347,7 +3347,7 @@ function renderManagementTab(){
   }
 
   // Categories type table
-  const allCats=[...new Set(TRANSACTIONS.map(t=>getEffectiveCat(t)))].sort();
+  const allCats=[...new Set(TRANSACTIONS.map(t=>getEffectiveCat(t)||'אחר'))].filter(Boolean).sort();
   const typeDefs=[{v:'expense',l:'הוצאה',c:'#ef4444'},{v:'income',l:'הכנסה',c:'#10b981'},{v:'investment',l:'השקעה',c:'#8b5cf6'},{v:'ignore',l:'התעלם',c:'#94a3b8'}];
   html+='<div class="card" style="margin-bottom:18px;"><h3>🏷 סוג קטגוריה (לחישוב מאזן)</h3>'
     +'<div style="font-size:12px;color:#64748b;margin-bottom:10px;">קבע האם כל קטגוריה היא הוצאה, הכנסה, השקעה או להתעלם — ישפיע על חישובי המאזן</div>'
