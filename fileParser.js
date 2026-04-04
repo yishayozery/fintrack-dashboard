@@ -48,7 +48,8 @@ window.handleFolderPick = function(input){
     return;
   }
 
-  _showToast('⏳ טוען ' + supported.length + ' קבצים מתוך ' + files.length + ' בתיקייה...');
+  // ── Show coin-loading animation overlay ──
+  _showCoinLoader(supported.length);
 
   // Show loading progress bar in folder overlay
   var pb = document.getElementById('procBar');
@@ -78,11 +79,13 @@ window.handleFolderPick = function(input){
       report.push({ name: file.name, format: detected, count: fileTxns.length });
       done++;
 
-      // Update progress bar
+      // Update progress bar + coin loader
       if(pb) pb.style.width = Math.round(done/supported.length*100) + '%';
+      _updateCoinLoader(done, supported.length);
 
       if(done === supported.length){
         if(ov) ov.style.display='none';
+        _hideCoinLoader();
         _finalizeLoad(results, supported.length, folder, report);
       }
     };
@@ -523,6 +526,66 @@ function _colIdx(headers, candidates){
 function _showToast(msg){
   if(typeof showToast === 'function') showToast(msg);
   else console.log('FinTrack toast:', msg);
+}
+
+/* ══════════════════════════════════════════════
+   COIN LOADER ANIMATION
+══════════════════════════════════════════════ */
+var _coinLoaderEl = null;
+
+function _showCoinLoader(fileCount){
+  if(_coinLoaderEl) return; // already showing
+  var el = document.createElement('div');
+  el.id = '_coinLoader';
+  el.innerHTML = [
+    '<style>',
+    '#_coinLoader{position:fixed;inset:0;z-index:999999;background:rgba(10,15,30,0.92);',
+    'display:flex;flex-direction:column;align-items:center;justify-content:center;',
+    'gap:18px;direction:rtl;font-family:inherit;}',
+    '._cl-hourglass{font-size:64px;animation:_cl-spin 1.8s ease-in-out infinite;}',
+    '@keyframes _cl-spin{0%,100%{transform:rotate(0deg);}45%{transform:rotate(180deg);}50%{transform:rotate(180deg);}95%{transform:rotate(360deg);}}',
+    '._cl-coins{display:flex;gap:6px;align-items:flex-end;height:40px;}',
+    '._cl-coin{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#f59e0b,#d97706);',
+    'box-shadow:0 2px 8px rgba(245,158,11,0.4);animation:_cl-fall 1.2s ease-in infinite;}',
+    '._cl-coin:nth-child(1){animation-delay:0s;}',
+    '._cl-coin:nth-child(2){animation-delay:0.15s;}',
+    '._cl-coin:nth-child(3){animation-delay:0.3s;}',
+    '._cl-coin:nth-child(4){animation-delay:0.45s;}',
+    '._cl-coin:nth-child(5){animation-delay:0.6s;}',
+    '@keyframes _cl-fall{0%{transform:translateY(-30px);opacity:0;}',
+    '30%{opacity:1;}80%{opacity:1;}100%{transform:translateY(30px);opacity:0;}}',
+    '._cl-title{font-size:18px;font-weight:700;color:#f1f5f9;}',
+    '._cl-sub{font-size:13px;color:#64748b;}',
+    '._cl-bar-wrap{width:240px;height:6px;background:#1e293b;border-radius:3px;overflow:hidden;}',
+    '._cl-bar{height:100%;width:0%;background:linear-gradient(90deg,#f59e0b,#3b82f6);',
+    'border-radius:3px;transition:width .4s ease;}',
+    '</style>',
+    '<div class="_cl-hourglass">⏳</div>',
+    '<div class="_cl-coins">',
+    '  <div class="_cl-coin"></div><div class="_cl-coin"></div><div class="_cl-coin"></div>',
+    '  <div class="_cl-coin"></div><div class="_cl-coin"></div>',
+    '</div>',
+    '<div class="_cl-title">מנתח את הנתונים הפיננסיים שלך...</div>',
+    '<div class="_cl-sub">טוען ' + fileCount + ' קבצים — זה ייקח רגע</div>',
+    '<div class="_cl-bar-wrap"><div id="_cl-bar" class="_cl-bar"></div></div>'
+  ].join('');
+  document.body.appendChild(el);
+  _coinLoaderEl = el;
+}
+
+function _updateCoinLoader(done, total){
+  var bar = document.getElementById('_cl-bar');
+  if(bar) bar.style.width = Math.round(done/total*100) + '%';
+}
+
+function _hideCoinLoader(){
+  if(_coinLoaderEl){
+    _coinLoaderEl.style.opacity = '0';
+    _coinLoaderEl.style.transition = 'opacity .4s';
+    var el = _coinLoaderEl;
+    setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 450);
+    _coinLoaderEl = null;
+  }
 }
 
 /* ══════════════════════════════════════════════

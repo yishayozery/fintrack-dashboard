@@ -262,24 +262,32 @@ window.reopenFolderStep = function() {
   };
 
   function _completeAuth(name, email, provider){
-    // ── If switching users: clear all previous data ─────────────────
-    var prevAuth = null;
-    try{ prevAuth = JSON.parse(localStorage.getItem('authUser')); }catch(e){}
-    var prevEmail = prevAuth && prevAuth.email ? prevAuth.email.toLowerCase() : '';
-    var newEmail  = email ? email.toLowerCase() : '';
-    if(prevEmail && prevEmail !== newEmail){
-      // Different user — wipe all financial data and onboarding state
-      ['loadedTransactions','loadedTransactionsTS','onboardingProfileSkipped',
-       'onboardingFilesSkipped','userProfile','catOverrides'].forEach(function(k){
-        localStorage.removeItem(k);
-      });
-      // Reset folder setting
-      try{ _appSettings.folderPath=''; _appSettings.fileCount=0; _appSettings.setupDone=false; _saveSettings(); }catch(e){}
-      // Clear in-memory arrays
-      try{ TRANSACTIONS.length=0; MONTHS_ORDER.length=0; }catch(e){}
-      // Reset userProfile in-memory
-      userProfile = {};
-    }
+    // ── Always wipe ALL financial data on every login ─────────────────
+    // (data comes from local files — user must reload each session)
+    ['loadedTransactions','loadedTransactionsTS','onboardingProfileSkipped',
+     'onboardingFilesSkipped','userProfile','catOverrides',
+     'disputeItems','dismissedIssues','approvedTxs','statementBalances'].forEach(function(k){
+      localStorage.removeItem(k);
+    });
+    // Reset folder & app settings for fresh session
+    try{
+      _appSettings.folderPath = '';
+      _appSettings.fileCount  = 0;
+      _appSettings.setupDone  = false;
+      _saveSettings();
+    }catch(e){}
+    // Clear in-memory financial arrays
+    try{ TRANSACTIONS.length=0; MONTHS_ORDER.length=0; }catch(e){}
+    // Clear in-memory catOverrides
+    try{
+      if(typeof catOverrides !== 'undefined'){
+        Object.keys(catOverrides).forEach(function(k){ delete catOverrides[k]; });
+      }
+    }catch(e){}
+    // Reset userProfile in-memory
+    userProfile = {};
+    // Refresh DOM so no stale data is visible
+    try{ if(typeof renderAll === 'function') renderAll(); }catch(e){}
 
     var authUser = { name: name, email: email, provider: provider, ts: Date.now() };
     localStorage.setItem('authUser', JSON.stringify(authUser));
@@ -292,6 +300,8 @@ window.reopenFolderStep = function() {
     } catch(e){}
 
     updateHeaderUser();
+    // Update page title dynamically
+    try{ document.title = 'FinTrack — ' + name; }catch(e){}
 
     // Update navbar: registration done, move to profile step
     window._flowState.registered = true;
