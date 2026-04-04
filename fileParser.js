@@ -186,9 +186,11 @@ window._updateHeaderMeta = function _updateHeaderMeta(){
   var badge = document.getElementById('headerUpdatedBadge');
   if(!sub && !badge) return;
 
+  var footer = document.getElementById('appFooter');
   if(!TRANSACTIONS || TRANSACTIONS.length === 0){
     if(sub){ sub.textContent = 'אין נתונים — טען קבצים פיננסיים'; sub.style.color='#64748b'; }
     if(badge) badge.style.display = 'none';
+    if(footer) footer.style.display = 'none';
     return;
   }
 
@@ -211,6 +213,16 @@ window._updateHeaderMeta = function _updateHeaderMeta(){
   if(sub){
     sub.textContent = range + ' · ' + TRANSACTIONS.length + ' עסקאות · ' + cardCount + ' מקורות';
     sub.style.color = '#94a3b8';
+  }
+
+  // Update footer sources line
+  if(footer){
+    var srcSet = {};
+    TRANSACTIONS.forEach(function(t){ if(t.card) srcSet[t.card]=1; });
+    var srcList = Object.keys(srcSet).sort().join(' | ');
+    var footerSrc = document.getElementById('footerSources');
+    if(footerSrc) footerSrc.textContent = 'מקורות: ' + srcList;
+    footer.style.display = 'block';
   }
 
   // Updated badge with full date+time
@@ -593,8 +605,18 @@ function _hideCoinLoader(){
 ══════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', function(){
 
-  // Restore saved transactions
+  // Restore saved transactions — only if auth screen is hidden (user already logged in)
+  // If auth screen is visible, data will be cleared anyway on login → don't restore
   setTimeout(function(){
+    var authScreenVisible = (function(){
+      var el = document.getElementById('authScreen');
+      return el && el.style.display !== 'none';
+    })();
+    if(authScreenVisible){
+      // Don't restore stale data — user hasn't logged in yet
+      _updateHeaderMeta();
+      return;
+    }
     if(typeof loadSavedTransactions === 'function' && loadSavedTransactions()){
       if(typeof renderAll === 'function') renderAll();
       _updateHeaderMeta();

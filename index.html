@@ -831,8 +831,8 @@ if(typeof Chart==='undefined'){
   </div>
 </div>
 
-<div class="footer">
-  מקורות: דיסקונט *0328, *2621 | מסטרקארד *7959 | קורפוריט *2039 | גולד *5232 | לאומי ביזנס *9781 | בנק לאומי 895-04876353 | בנק פיבי · ינואר–מרץ 2026<br>
+<div class="footer" id="appFooter" style="display:none;">
+  <span id="footerSources"></span><br>
   הנתונים לצרכי מעקב אישי בלבד
 </div>
 
@@ -1268,7 +1268,7 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeFlowG
 
 <!-- VERSION FOOTER -->
 <div id="versionFooter" style="position:fixed;bottom:8px;left:12px;z-index:99999;font-size:11px;color:#94a3b8;background:rgba(15,23,42,0.85);border:1px solid #1e3a5f;border-radius:6px;padding:3px 10px;font-family:monospace;pointer-events:none;backdrop-filter:blur(4px);">
-  FinTrack v1.17.0 · 2026-04-04 · Clear data on login + coin loader
+  FinTrack v1.17.1 · 2026-04-04 · Fix stale data on new login
 </div>
 
 </body>
